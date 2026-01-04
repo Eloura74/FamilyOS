@@ -3,57 +3,42 @@ import os
 import shutil
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from typing import Dict, Any, List
 from backend.integrations.gemini_vision import analyze_receipt_image
+from backend.repositories.budget import BudgetRepository
+from backend.api.auth import get_current_user
 
 router = APIRouter()
-
-DATA_FILE = "backend/data/expenses.json"
-
-def load_expenses() -> List[Dict[str, Any]]:
-    if not os.path.exists(DATA_FILE):
-        return []
-    try:
-        with open(DATA_FILE, 'r') as f:
-            return json.load(f)
-    except:
-        return []
-
-def save_expenses(expenses: List[Dict[str, Any]]):
-    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-    with open(DATA_FILE, 'w') as f:
-        json.dump(expenses, f, indent=2)
+repo = BudgetRepository()
 
 @router.get("/")
-async def get_expenses():
+async def get_expenses(current_user: Dict[str, Any] = Depends(get_current_user)):
     """
     Récupère toutes les dépenses.
     """
-    return load_expenses()
+    return repo.get_all()
 
 @router.get("/stats")
-async def get_budget_stats():
+async def get_budget_stats(current_user: Dict[str, Any] = Depends(get_current_user)):
     """
     Calcule les stats du mois courant.
     """
-    expenses = load_expenses()
     now = datetime.now()
-    current_month = now.month
-    current_year = now.year
+    
+    # Utilisation de la méthode spécifique du repository
+    monthly_expenses = repo.get_by_month(now.month, now.year)
     
     monthly_total = 0.0
     categories = {}
     
-    for expense in expenses:
+    for expense in monthly_expenses:
         try:
-            date_obj = datetime.strptime(expense['date'], "%Y-%m-%d")
-            if date_obj.month == current_month and date_obj.year == current_year:
-                amount = float(expense['amount'])
-                monthly_total += amount
-                
-                cat = expense.get('category', 'Autre')
-                categories[cat] = categories.get(cat, 0) + amount
+            amount = float(expense['amount'])
+            monthly_total += amount
+            
+            cat = expense.get('category', 'Autre')
+            categories[cat] = categories.get(cat, 0) + amount
         except:
             continue
             
@@ -63,8 +48,24 @@ async def get_budget_stats():
         "month_label": now.strftime("%B %Y")
     }
 
+@router.post("/")
+async def create_expense(expense_data: Dict[str, Any], current_user: Dict[str, Any] = Depends(get_current_user)):
+    """
+    Crée une nouvelle dépense manuellement (ou via analyse générique).
+    """
+    new_expense = {
+        "id": str(uuid.uuid4()),
+        "date": expense_data.get("date", datetime.now().strftime("%Y-%m-%d")),
+        "amount": expense_data.get("amount", 0.0),
+        "merchant": expense_data.get("merchant", "Inconnu"),
+        "category": expense_data.get("category", "Autre"),
+        "items": expense_data.get("items", [])
+    }
+    repo.add(new_expense)
+    return {"status": "success", "expense": new_expense}
+
 @router.post("/upload")
-async def upload_receipt(file: UploadFile = File(...)):
+async def upload_receipt(file: UploadFile = File(...), current_user: Dict[str, Any] = Depends(get_current_user)):
     """
     Upload un ticket de caisse, l'analyse et ajoute la dépense.
     """
@@ -91,10 +92,8 @@ async def upload_receipt(file: UploadFile = File(...)):
             "items": analysis.get("items", [])
         }
         
-        # 4. Sauvegarde
-        expenses = load_expenses()
-        expenses.append(new_expense)
-        save_expenses(expenses)
+        # 4. Sauvegarde via Repository
+        repo.add(new_expense)
         
         return {"status": "success", "expense": new_expense}
         

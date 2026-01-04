@@ -1,15 +1,13 @@
-import { useEffect } from "react";
-
 export default function Login() {
   const handleLogin = () => {
     // Redirection vers le backend pour initier OAuth
-    window.location.href = "http://localhost:8000/api/auth/login";
+    window.location.href = "http://localhost:8000/api/auth/google/login";
   };
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 font-['Inter']">
       <div className="bg-slate-800/50 p-8 rounded-3xl border border-slate-700 max-w-md w-full text-center backdrop-blur-xl">
-        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center text-4xl mb-6 shadow-lg shadow-blue-500/20">
+        <div className="w-20 h-20 bg-linear-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center text-4xl mb-6 shadow-lg shadow-blue-500/20">
           🏠
         </div>
 

@@ -114,8 +114,10 @@ export default function Dashboard() {
     formData.append("file", file);
 
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch("http://localhost:8000/api/meals/upload", {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -144,8 +146,10 @@ export default function Dashboard() {
     formData.append("file", file);
 
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch("http://localhost:8000/api/budget/upload", {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -173,12 +177,24 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
         const [weatherRes, eventsRes, mealsRes, budgetRes] = await Promise.all([
-          fetch("http://localhost:8000/api/weather/current"),
-          fetch("http://localhost:8000/api/calendar/events"),
-          fetch("http://localhost:8000/api/meals"),
-          fetch("http://localhost:8000/api/budget/stats"),
+          fetch("http://localhost:8000/api/weather/current"), // Public ?
+          fetch("http://localhost:8000/api/calendar/events", { headers }),
+          fetch("http://localhost:8000/api/meals", { headers }),
+          fetch("http://localhost:8000/api/budget/stats", { headers }),
         ]);
+
+        if (
+          weatherRes.status === 401 ||
+          eventsRes.status === 401 ||
+          mealsRes.status === 401 ||
+          budgetRes.status === 401
+        ) {
+          throw new Error("Unauthorized");
+        }
 
         if (!weatherRes.ok || !eventsRes.ok) throw new Error("Erreur réseau");
 
@@ -192,15 +208,38 @@ export default function Dashboard() {
         setMeals(mealsData);
         setBudgetStats(budgetData);
         setLoading(false);
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        setError("Impossible de charger les données");
+        setError(err.message || "Impossible de charger les données");
         setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  // Gestion globale des erreurs 401 (Token expiré)
+  useEffect(() => {
+    if (error === "Unauthorized") {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+  }, [error]);
+
+  // Gestion globale des erreurs 401 (Token expiré)
+  useEffect(() => {
+    if (error === "Unauthorized") {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+  }, [error]);
+
+  const handleFetchError = (err: any) => {
+    if (err.message.includes("401") || err.message.includes("Unauthorized")) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+  };
 
   if (loading)
     return (
@@ -846,28 +885,109 @@ export default function Dashboard() {
                         >
                           Fermer
                         </button>
-                        {analysisResult.date && (
+
+                        {/* Cas 1 : Facture / Ticket -> Budget */}
+                        {analysisResult.amount !== undefined ||
+                        analysisResult.type
+                          ?.toLowerCase()
+                          .includes("facture") ||
+                        analysisResult.type
+                          ?.toLowerCase()
+                          .includes("ticket") ? (
+                          <button
+                            onClick={async () => {
+                              try {
+                                const token = localStorage.getItem("token");
+                                const res = await fetch(
+                                  "http://localhost:8000/api/budget/",
+                                  {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                    body: JSON.stringify({
+                                      date: analysisResult.date,
+                                      amount: analysisResult.amount,
+                                      merchant:
+                                        analysisResult.merchant ||
+                                        analysisResult.title,
+                                      category: analysisResult.category,
+                                      items: analysisResult.action_items,
+                                    }),
+                                  }
+                                );
+
+                                if (!res.ok)
+                                  throw new Error("Erreur ajout budget");
+
+                                alert(
+                                  `Dépense ajoutée : ${analysisResult.amount}€`
+                                );
+                                setShowUploadModal(false);
+                                // Rafraîchir les stats
+                                const statsRes = await fetch(
+                                  "http://localhost:8000/api/budget/stats",
+                                  {
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                  }
+                                );
+                                if (statsRes.ok) {
+                                  const statsData = await statsRes.json();
+                                  setBudgetStats(statsData);
+                                }
+                              } catch (e) {
+                                console.error(e);
+                                alert("Erreur lors de l'ajout au budget.");
+                              }
+                            }}
+                            className="flex-1 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-medium transition-colors"
+                          >
+                            💸 Ajouter ({analysisResult.amount}€)
+                          </button>
+                        ) : analysisResult.date ? (
+                          /* Cas 2 : Événement -> Calendrier */
                           <button
                             onClick={async () => {
                               try {
                                 // Conversion de la date (ex: 06/01/2026 -> ISO)
                                 let startIso = new Date().toISOString();
-                                const dateParts =
-                                  analysisResult.date.split("/");
-                                if (dateParts.length === 3) {
-                                  // Format JJ/MM/AAAA
-                                  const d = new Date(
-                                    `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}T09:00:00`
-                                  );
-                                  startIso = d.toISOString();
+                                if (analysisResult.date) {
+                                  const dateParts =
+                                    analysisResult.date.split("/"); // YYYY-MM-DD ou DD/MM/YYYY ? Gemini renvoie souvent YYYY-MM-DD mnt
+                                  if (dateParts.length === 3) {
+                                    if (dateParts[0].length === 4) {
+                                      // YYYY-MM-DD
+                                      startIso = new Date(
+                                        `${analysisResult.date}T09:00:00`
+                                      ).toISOString();
+                                    } else {
+                                      // DD/MM/YYYY
+                                      const d = new Date(
+                                        `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}T09:00:00`
+                                      );
+                                      startIso = d.toISOString();
+                                    }
+                                  } else if (
+                                    analysisResult.date.includes("-")
+                                  ) {
+                                    // YYYY-MM-DD direct
+                                    startIso = new Date(
+                                      `${analysisResult.date}T09:00:00`
+                                    ).toISOString();
+                                  }
                                 }
 
+                                const token = localStorage.getItem("token");
                                 const res = await fetch(
                                   "http://localhost:8000/api/calendar/events",
                                   {
                                     method: "POST",
                                     headers: {
                                       "Content-Type": "application/json",
+                                      Authorization: `Bearer ${token}`,
                                     },
                                     body: JSON.stringify({
                                       summary: analysisResult.title,
@@ -886,7 +1006,7 @@ export default function Dashboard() {
 
                                 alert("Événement ajouté au calendrier !");
                                 setShowUploadModal(false);
-                                window.location.reload(); // Recharger pour voir l'événement
+                                window.location.reload();
                               } catch (e) {
                                 console.error(e);
                                 alert("Erreur lors de l'ajout au calendrier.");
@@ -894,9 +1014,9 @@ export default function Dashboard() {
                             }}
                             className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors"
                           >
-                            📅 Ajouter
+                            📅 Ajouter Agenda
                           </button>
-                        )}
+                        ) : null}
                       </div>
                     </>
                   )}

@@ -9,3 +9,6 @@ icalendar
 python-dateutil
 google-auth-oauthlib
 google-api-python-client
+passlib[bcrypt]
+python-jose[cryptography]
+bcrypt==3.2.2

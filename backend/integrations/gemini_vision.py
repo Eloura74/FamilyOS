@@ -49,15 +49,19 @@ async def analyze_image_with_gemini(image_path: str) -> Dict[str, Any]:
         Tu es un assistant personnel intelligent pour une famille.
         Analyse ce document ou cette image.
         
-        Identifie le type de document (ex: Menu de cantine, Invitation anniversaire, Facture, Flyer événement, Autre).
+        Identifie le type de document (ex: Menu de cantine, Invitation anniversaire, Facture, Ticket de caisse, Flyer événement, Autre).
         
         Extrais les informations clés sous format JSON strict :
         {
             "type": "Type du document",
             "title": "Titre principal ou résumé court",
-            "date": "Date de l'événement ou du document (si applicable, sinon null)",
-            "summary": "Résumé en 1 ou 2 phrases du contenu utile pour la famille.",
-            "action_items": ["Liste", "des choses", "à faire", "ou à retenir"]
+            "date": "Date de l'événement ou du document (YYYY-MM-DD) ou null",
+            "summary": "Résumé en 1 ou 2 phrases.",
+            "action_items": ["Liste", "des choses", "à faire"],
+            
+            "amount": 0.00, // (Uniquement si Facture/Ticket) Montant total
+            "merchant": "Nom du magasin", // (Uniquement si Facture/Ticket)
+            "category": "Catégorie" // (Uniquement si Facture/Ticket: Alimentation, Maison, etc.)
         }
         
         Réponds UNIQUEMENT le JSON, sans markdown ```json ```.

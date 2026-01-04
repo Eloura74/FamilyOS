@@ -4,15 +4,21 @@ import Dashboard from "./components/Dashboard";
 import Privacy from "./components/Privacy";
 import Settings from "./components/Settings";
 import Login from "./components/Login";
+import AuthCallback from "./components/AuthCallback";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/auth/status")
-      .then((res) => res.json())
-      .then((data) => setIsAuthenticated(data.authenticated))
-      .catch(() => setIsAuthenticated(false));
+    // Vérification simple du token JWT
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Idéalement on devrait vérifier la validité du token auprès du backend (/api/auth/me)
+      // Pour l'instant on suppose qu'il est valide s'il est présent
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
   }, []);
 
   if (isAuthenticated === null) {
@@ -33,6 +39,7 @@ function App() {
           path="/login"
           element={!isAuthenticated ? <Login /> : <Navigate to="/" />}
         />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route
           path="/"
