@@ -136,7 +136,7 @@ export default function Dashboard() {
       // Démarrage de la musique d'ambiance (si dispo)
       if (!musicRef.current) {
         musicRef.current = new Audio("/sounds/ambient.mp3");
-        musicRef.current.volume = 0.1; // Volume bas pour le fond
+        musicRef.current.volume = 0.25; // Volume bas pour le fond
         musicRef.current.loop = true;
       }
       musicRef.current
