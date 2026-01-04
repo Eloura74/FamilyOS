@@ -33,8 +33,8 @@ class CalendarService:
         Crée un événement dans le calendrier principal.
         event_data attendu: {
             "summary": "Titre",
-            "start": "ISO string",
-            "end": "ISO string" (optionnel, défaut +1h),
+            "start": "ISO string" OU "YYYY-MM-DD" (All day),
+            "end": "ISO string" OU "YYYY-MM-DD" (optionnel),
             "description": "Description" (optionnel)
         }
         """
@@ -44,27 +44,40 @@ class CalendarService:
 
         service = build('calendar', 'v3', credentials=creds)
 
-        # Construction de l'objet événement Google
-        start_dt = datetime.fromisoformat(event_data['start'].replace('Z', '+00:00'))
+        # Détection All Day (si la date fait 10 caractères YYYY-MM-DD)
+        is_all_day = len(event_data['start']) == 10
         
-        # Si pas de fin, on met +1h par défaut
-        if 'end' in event_data and event_data['end']:
-             end_dt = datetime.fromisoformat(event_data['end'].replace('Z', '+00:00'))
-        else:
-             end_dt = start_dt + timedelta(hours=1)
-
         event = {
             'summary': event_data.get('summary', 'Nouvel événement'),
             'description': event_data.get('description', ''),
-            'start': {
+        }
+
+        if is_all_day:
+            event['start'] = {'date': event_data['start']}
+            # Pour Google Calendar, la fin d'un événement all-day est le jour suivant
+            if 'end' in event_data and event_data['end']:
+                 event['end'] = {'date': event_data['end']}
+            else:
+                 # Par défaut le même jour (donc fin = start + 1 jour)
+                 start_date = datetime.strptime(event_data['start'], "%Y-%m-%d")
+                 end_date = start_date + timedelta(days=1)
+                 event['end'] = {'date': end_date.strftime("%Y-%m-%d")}
+        else:
+            # Format DateTime
+            start_dt = datetime.fromisoformat(event_data['start'].replace('Z', '+00:00'))
+            if 'end' in event_data and event_data['end']:
+                 end_dt = datetime.fromisoformat(event_data['end'].replace('Z', '+00:00'))
+            else:
+                 end_dt = start_dt + timedelta(hours=1)
+            
+            event['start'] = {
                 'dateTime': start_dt.isoformat(),
                 'timeZone': 'Europe/Paris',
-            },
-            'end': {
+            }
+            event['end'] = {
                 'dateTime': end_dt.isoformat(),
                 'timeZone': 'Europe/Paris',
-            },
-        }
+            }
 
         created_event = service.events().insert(calendarId='primary', body=event).execute()
         return created_event
@@ -75,17 +88,13 @@ class CalendarService:
         """
         creds = self._get_credentials()
         if not creds or not creds.valid:
-            # Si pas de credentials valides, on retourne une liste vide
-            # Le frontend détectera qu'on n'est pas connecté via /api/auth/status
             return []
 
         try:
             service = build('calendar', 'v3', credentials=creds)
 
             # Fenêtre de temps : Maintenant à Demain fin de journée
-            now = datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-            
-            # Calcul de la fin de la période (7 jours)
+            now = datetime.utcnow().isoformat() + 'Z'
             tomorrow = datetime.utcnow() + timedelta(days=7)
             tomorrow_end = tomorrow.replace(hour=23, minute=59, second=59).isoformat() + 'Z'
 
@@ -105,12 +114,28 @@ class CalendarService:
                 start = event['start'].get('dateTime', event['start'].get('date'))
                 end = event['end'].get('dateTime', event['end'].get('date'))
                 summary = event.get('summary', 'Sans titre')
+                description = event.get('description', '')
                 
-                # Détection all_day (si la date n'a pas de T)
                 all_day = 'T' not in start
                 
-                # Analyse des tags et items
+                # Analyse des tags
                 analysis = analyze_event_for_tags(summary)
+                required_items = analysis["items"]
+
+                # Extraction des items depuis la description (format [ITEMS]: item1; item2)
+                if description and "[ITEMS]:" in description:
+                    try:
+                        # On prend tout ce qui est après [ITEMS]:
+                        items_part = description.split("[ITEMS]:")[1].strip()
+                        # On s'arrête à la fin de la ligne ou du bloc
+                        items_part = items_part.split("\n")[0]
+                        # On sépare par des points-virgules ou virgules
+                        manual_items = [item.strip() for item in items_part.replace(";", ",").split(",") if item.strip()]
+                        required_items.extend(manual_items)
+                        # Dédoublonnage
+                        required_items = list(set(required_items))
+                    except Exception as e:
+                        print(f"Erreur parsing items description: {e}")
 
                 events.append({
                     "title": summary,
@@ -119,7 +144,7 @@ class CalendarService:
                     "all_day": all_day,
                     "location": event.get('location', ''),
                     "tags": analysis["tags"],
-                    "required_items": analysis["items"]
+                    "required_items": sorted(required_items)
                 })
 
             return events

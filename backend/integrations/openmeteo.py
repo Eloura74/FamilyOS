@@ -15,6 +15,7 @@ async def get_weather_forecast() -> Dict[str, Any]:
         "latitude": LATITUDE,
         "longitude": LONGITUDE,
         "current": ["temperature_2m", "apparent_temperature", "is_day", "precipitation", "rain", "showers", "snowfall", "weather_code", "wind_speed_10m"],
+        "daily": ["weather_code", "temperature_2m_max", "temperature_2m_min", "precipitation_probability_max"],
         "timezone": "auto"
     }
 

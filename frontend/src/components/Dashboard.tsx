@@ -28,6 +28,13 @@ interface WeatherData {
     weather_code: number;
     wind_speed_10m: number;
   };
+  daily?: {
+    time: string[];
+    weather_code: number[];
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    precipitation_probability_max: number[];
+  };
   recommendation?: {
     summary: string;
     items: string[];
@@ -58,6 +65,8 @@ export default function Dashboard() {
 
   // État pour le briefing
   const [briefingPlaying, setBriefingPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const musicRef = useRef<HTMLAudioElement | null>(null);
 
   // État pour l'upload
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -123,22 +132,121 @@ export default function Dashboard() {
   const playBriefing = async () => {
     try {
       setBriefingPlaying(true);
+
+      // Démarrage de la musique d'ambiance (si dispo)
+      if (!musicRef.current) {
+        musicRef.current = new Audio("/sounds/ambient.mp3");
+        musicRef.current.volume = 0.1; // Volume bas pour le fond
+        musicRef.current.loop = true;
+      }
+      musicRef.current
+        .play()
+        .catch((e) =>
+          console.log("Pas de musique d'ambiance trouvée ou erreur:", e)
+        );
+
       const res = await fetch("http://localhost:8000/api/briefing");
       if (!res.ok) throw new Error("Erreur briefing");
       const data = await res.json();
 
-      // Pour l'instant, on utilise l'API Web Speech native du navigateur
-      const utterance = new SpeechSynthesisUtterance(data.text);
-      utterance.lang = "fr-FR";
-      utterance.rate = 1.0;
-      utterance.onend = () => setBriefingPlaying(false);
-      window.speechSynthesis.speak(utterance);
+      if (data.audio_url) {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+
+        const audio = new Audio(`http://localhost:8000${data.audio_url}`);
+        audioRef.current = audio;
+
+        audio.onended = () => {
+          setBriefingPlaying(false);
+          // Fade out music
+          if (musicRef.current) {
+            const fadeOut = setInterval(() => {
+              if (musicRef.current && musicRef.current.volume > 0.01) {
+                musicRef.current.volume -= 0.01;
+              } else {
+                clearInterval(fadeOut);
+                musicRef.current?.pause();
+              }
+            }, 100);
+          }
+        };
+
+        await audio.play();
+      } else {
+        // Fallback TTS navigateur
+        const utterance = new SpeechSynthesisUtterance(data.text);
+        utterance.lang = "fr-FR";
+        utterance.rate = 1.0;
+        utterance.onend = () => {
+          setBriefingPlaying(false);
+          musicRef.current?.pause();
+        };
+        window.speechSynthesis.speak(utterance);
+      }
     } catch (err) {
       console.error(err);
       setBriefingPlaying(false);
+      musicRef.current?.pause();
       alert("Impossible de lire le briefing.");
     }
   };
+
+  const fetchData = async (isInitial = true) => {
+    if (isInitial) setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const headers: HeadersInit = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+
+      const [weatherRes, eventsRes, mealsRes, budgetRes] = await Promise.all([
+        fetch("http://localhost:8000/api/weather/current"),
+        fetch("http://localhost:8000/api/calendar/events", { headers }),
+        fetch("http://localhost:8000/api/meals", { headers }),
+        fetch("http://localhost:8000/api/budget/stats", { headers }),
+      ]);
+
+      if (
+        weatherRes.status === 401 ||
+        eventsRes.status === 401 ||
+        mealsRes.status === 401 ||
+        budgetRes.status === 401
+      ) {
+        throw new Error("Unauthorized");
+      }
+
+      if (!weatherRes.ok || !eventsRes.ok) throw new Error("Erreur réseau");
+
+      const weatherData = await weatherRes.json();
+      const eventsData = await eventsRes.json();
+      const mealsData = mealsRes.ok ? await mealsRes.json() : {};
+      const budgetData = budgetRes.ok ? await budgetRes.json() : null;
+
+      setWeather(weatherData);
+      setEvents(eventsData);
+      setMeals(mealsData);
+      setBudgetStats(budgetData);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Impossible de charger les données");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Gestion globale des erreurs 401 (Token expiré)
+  useEffect(() => {
+    if (error === "Unauthorized") {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+  }, [error]);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -162,6 +270,12 @@ export default function Dashboard() {
       const data = await res.json();
       console.log("Fichier uploadé:", data);
       setAnalysisResult(data.analysis);
+
+      if (data.event_created) {
+        await fetchData(false); // Rafraîchissement silencieux
+        // Petit délai pour laisser l'animation se faire si besoin
+        setTimeout(() => alert("📅 Événement ajouté à l'agenda !"), 500);
+      }
     } catch (err) {
       console.error(err);
       alert("Erreur lors de l'envoi du document.");
@@ -240,60 +354,6 @@ export default function Dashboard() {
       setUploading(false);
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        const [weatherRes, eventsRes, mealsRes, budgetRes] = await Promise.all([
-          fetch("http://localhost:8000/api/weather/current"), // Public ?
-          fetch("http://localhost:8000/api/calendar/events", { headers }),
-          fetch("http://localhost:8000/api/meals", { headers }),
-          fetch("http://localhost:8000/api/budget/stats", { headers }),
-        ]);
-
-        if (
-          weatherRes.status === 401 ||
-          eventsRes.status === 401 ||
-          mealsRes.status === 401 ||
-          budgetRes.status === 401
-        ) {
-          throw new Error("Unauthorized");
-        }
-
-        if (!weatherRes.ok || !eventsRes.ok) throw new Error("Erreur réseau");
-
-        const weatherData = await weatherRes.json();
-        const eventsData = await eventsRes.json();
-        const mealsData = mealsRes.ok ? await mealsRes.json() : {};
-        const budgetData = budgetRes.ok ? await budgetRes.json() : null;
-
-        setWeather(weatherData);
-        setEvents(eventsData);
-        setMeals(mealsData);
-        setBudgetStats(budgetData);
-        setLoading(false);
-      } catch (err: any) {
-        console.error(err);
-        setError(err.message || "Impossible de charger les données");
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // Gestion globale des erreurs 401 (Token expiré)
-  useEffect(() => {
-    if (error === "Unauthorized") {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
-  }, [error]);
 
   if (loading)
     return (
@@ -473,9 +533,47 @@ export default function Dashboard() {
               ) : (
                 <div className="space-y-4">
                   <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                    <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono">
-                      {JSON.stringify(analysisResult, null, 2)}
-                    </pre>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-xl">
+                        ✅
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-sm">
+                          {analysisResult.title || "Document analysé"}
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          {analysisResult.type}
+                        </p>
+                      </div>
+                    </div>
+
+                    {analysisResult.summary && (
+                      <p className="text-sm text-slate-300 mb-3 bg-slate-900/50 p-3 rounded-lg">
+                        {analysisResult.summary}
+                      </p>
+                    )}
+
+                    {analysisResult.action_items &&
+                      analysisResult.action_items.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-bold text-slate-400 uppercase">
+                            Actions détectées
+                          </p>
+                          <ul className="space-y-1">
+                            {analysisResult.action_items.map(
+                              (item: string, idx: number) => (
+                                <li
+                                  key={idx}
+                                  className="text-sm text-slate-300 flex items-start gap-2"
+                                >
+                                  <span className="text-blue-400 mt-1">•</span>
+                                  {item}
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        </div>
+                      )}
                   </div>
                   <button
                     onClick={() => setShowUploadModal(false)}

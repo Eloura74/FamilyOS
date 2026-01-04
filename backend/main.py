@@ -52,16 +52,24 @@ def health_check():
 @app.get("/api/briefing")
 async def get_briefing():
     """
-    Génère le briefing matinal (texte).
+    Génère le briefing matinal (texte + audio).
     """
     try:
-        # Récupération parallèle (ou séquentielle rapide) des données
+        # Récupération parallèle des données
         weather_data = await get_weather_forecast()
         events_data = await calendar_service.fetch_events()
         
+        # Génération du texte
         briefing_text = generate_daily_briefing(weather_data, events_data)
         
-        return {"text": briefing_text}
+        # Génération de l'audio (TTS)
+        from backend.integrations.tts import generate_audio_briefing
+        audio_url = await generate_audio_briefing(briefing_text)
+        
+        return {
+            "text": briefing_text,
+            "audio_url": audio_url
+        }
     except Exception as e:
         print(f"Erreur briefing: {e}")
         raise HTTPException(status_code=500, detail=str(e))

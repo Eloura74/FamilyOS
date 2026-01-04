@@ -25,15 +25,16 @@ RAW_RULES = {
         "karaté": ["Kimono", "Ceinture", "Protections", "Passeport sportif", "Gourde"],
         "boxe|muay": ["Gants", "Bandes/Sous-gants", "Protège-dents", "Coquille", "Protège-tibias", "Gourde", "Serviette"],
         "foot|football|futsal": ["Maillot", "Short", "Chaussettes", "Protège-tibias", "Crampons/Stabilisés", "Gourde"] + _BASE_DOUCHE_SPORT,
-        "rugby": ["Maillot résistant", "Short renforcé", "Protège-dents", "Crampons vissés/moulés", "Strappal"] + _BASE_DOUCHE_SPORT,
+        "rugby": ["Maillot", "Short", "Crampons vissés/moulés", "Strappal", "Gourde"] + _BASE_DOUCHE_SPORT,
         "tennis|padel": ["Raquette", "Balles", "Chaussures terre/dur", "Gourde", "Poignets éponge", "Serviette"],
         "badminton|squash": ["Raquette", "Volants/Balles", "Chaussures indoor (semelle non marquante)", "Gourde", "Serviette"],
         "muscu|fitness|gym|crossfit": ["Tenue sport", "Chaussures propres", "Serviette obligatoire", "Cadenas", "Gourde/Shaker", "Maniques (si besoin)"],
         "yoga|pilates": ["Tapis personnel", "Tenue souple", "Bouteille d'eau", "Petite serviette"],
         "running|course à pied|jogging": ["Montre GPS", "Ceinture cardio", "Clés maison", "Écouteurs", "Bandeau/Casquette"],
         "escalade|bloc": ["Baudrier", "Chaussons", "Système d'assurage", "Magnésie", "Brosse", "Gourde"],
-        "vélo|cyclisme|vtt": ["Casque", "Gants", "Bidon", "Kit réparation (Chambre à air/Démonte-pneu)", "Pompe/Co2", "Multi-tool", "Lunettes"]
-    },
+        "vélo|cyclisme|vtt": ["Casque", "Gants", "Bidon", "Kit réparation (Chambre à air/Démonte-pneu)", "Pompe/Co2", "Multi-tool", "Lunettes"],
+        "athlétisme|athlé": ["Gourde", "Tee-shirt", "Baskette", "Veste"],
+    }, 
 
     # 3. MAKER & TECH (Adapté à votre profil)
     "tech": {
