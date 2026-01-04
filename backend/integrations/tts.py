@@ -1,5 +1,6 @@
 import edge_tts
 import os
+import time
 from pathlib import Path
 
 # Dossier de stockage des fichiers audio
@@ -12,19 +13,27 @@ async def generate_audio_briefing(text: str) -> str:
     Retourne le chemin relatif du fichier généré.
     """
     try:
-        # Voix française masculine de haute qualité (Multilingual Neural)
-        # Options: fr-FR-RemyMultilingualNeural, fr-FR-HenriNeural
-        voice = "fr-FR-RemyMultilingualNeural" 
+        # Voix française plus fluide et naturelle (Denise)
+        voice = "fr-FR-DeniseNeural" 
         
-        output_filename = "briefing_daily.mp3"
+        # Nom de fichier unique pour éviter le cache navigateur
+        timestamp = int(time.time())
+        output_filename = f"briefing_{timestamp}.mp3"
         output_path = AUDIO_DIR / output_filename
         
+        # Nettoyage des anciens fichiers (optionnel mais propre)
+        for file in AUDIO_DIR.glob("briefing_*.mp3"):
+            try:
+                file.unlink()
+            except:
+                pass
+        
+        # On enlève le rate pour garder la fluidité native
         communicate = edge_tts.Communicate(text, voice)
         
         await communicate.save(str(output_path))
         
         return f"/uploads/{output_filename}"
-        
     except Exception as e:
         print(f"Erreur TTS: {e}")
         return None

@@ -20,6 +20,7 @@ import MealsCard from "./dashboard/MealsCard";
 import BudgetCard from "./dashboard/BudgetCard";
 import ClothingCard from "./dashboard/ClothingCard";
 import CalendarCard from "./dashboard/CalendarCard";
+import GmailCard from "./dashboard/GmailCard";
 import SortableWidget from "./dashboard/SortableWidget";
 
 interface WeatherData {
@@ -57,6 +58,7 @@ export default function Dashboard() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [meals, setMeals] = useState<Record<string, any>>({});
   const [budgetStats, setBudgetStats] = useState<any>(null);
+  const [emails, setEmails] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +73,7 @@ export default function Dashboard() {
   // Preload de la musique d'ambiance
   useEffect(() => {
     const music = new Audio("/sounds/ambient.mp3");
-    music.volume = 0.25;
+    music.volume = 0.4;
     music.loop = true;
     music.preload = "auto";
     musicRef.current = music;
@@ -88,6 +90,7 @@ export default function Dashboard() {
   // État pour l'ordre des widgets
   const [widgetOrder, setWidgetOrder] = useState<string[]>([
     "weather",
+    "gmail",
     "meals",
     "budget",
     "clothing",
@@ -109,7 +112,12 @@ export default function Dashboard() {
     const savedOrder = localStorage.getItem("dashboardWidgetOrder");
     if (savedOrder) {
       try {
-        setWidgetOrder(JSON.parse(savedOrder));
+        const parsedOrder = JSON.parse(savedOrder);
+        // Ajout de gmail si pas présent (migration)
+        if (!parsedOrder.includes("gmail")) {
+          parsedOrder.splice(1, 0, "gmail");
+        }
+        setWidgetOrder(parsedOrder);
       } catch (e) {
         console.error("Erreur parsing ordre widgets", e);
       }
@@ -144,7 +152,7 @@ export default function Dashboard() {
 
       // Démarrage immédiat de la musique via la ref préchargée
       if (musicRef.current) {
-        musicRef.current.volume = 0.4; // Volume bas pour le fond
+        musicRef.current.volume = 0.4;
         const playPromise = musicRef.current.play();
         if (playPromise !== undefined) {
           playPromise.catch((error) => {
@@ -209,18 +217,21 @@ export default function Dashboard() {
         ? { Authorization: `Bearer ${token}` }
         : {};
 
-      const [weatherRes, eventsRes, mealsRes, budgetRes] = await Promise.all([
-        fetch("http://localhost:8000/api/weather/current"),
-        fetch("http://localhost:8000/api/calendar/events", { headers }),
-        fetch("http://localhost:8000/api/meals", { headers }),
-        fetch("http://localhost:8000/api/budget/stats", { headers }),
-      ]);
+      const [weatherRes, eventsRes, mealsRes, budgetRes, gmailRes] =
+        await Promise.all([
+          fetch("http://localhost:8000/api/weather/current"),
+          fetch("http://localhost:8000/api/calendar/events", { headers }),
+          fetch("http://localhost:8000/api/meals", { headers }),
+          fetch("http://localhost:8000/api/budget/stats", { headers }),
+          fetch("http://localhost:8000/api/gmail/important", { headers }),
+        ]);
 
       if (
         weatherRes.status === 401 ||
         eventsRes.status === 401 ||
         mealsRes.status === 401 ||
-        budgetRes.status === 401
+        budgetRes.status === 401 ||
+        gmailRes.status === 401
       ) {
         throw new Error("Unauthorized");
       }
@@ -231,11 +242,13 @@ export default function Dashboard() {
       const eventsData = await eventsRes.json();
       const mealsData = mealsRes.ok ? await mealsRes.json() : {};
       const budgetData = budgetRes.ok ? await budgetRes.json() : null;
+      const emailsData = gmailRes.ok ? await gmailRes.json() : [];
 
       setWeather(weatherData);
       setEvents(eventsData);
       setMeals(mealsData);
       setBudgetStats(budgetData);
+      setEmails(emailsData);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Impossible de charger les données");
@@ -398,6 +411,14 @@ export default function Dashboard() {
     switch (id) {
       case "weather":
         return <WeatherCard weather={weather} />;
+      case "gmail":
+        return (
+          <GmailCard
+            emails={emails}
+            toggleSection={toggleSection}
+            expandedSection={expandedSection}
+          />
+        );
       case "meals":
         return (
           <MealsCard

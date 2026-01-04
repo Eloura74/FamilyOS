@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from datetime import datetime
 
-def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}) -> str:
+def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}, emails: List[Dict[str, Any]] = []) -> str:
     """
     Génère un texte naturel résumant la météo, l'agenda et les repas.
     """
@@ -41,6 +41,15 @@ def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]
     if today in meals and "lunch" in meals[today]:
         lunch_menu = meals[today]["lunch"]
         briefing_parts.append(f"Ce midi, à la cantine, les enfants mangeront : {lunch_menu}.")
+
+    # 5. Emails Importants
+    if emails:
+        count = len(emails)
+        briefing_parts.append(f"Vous avez {count} emails importants en attente.")
+        for email in emails:
+            sender = email.get('sender', 'Inconnu')
+            subject = email.get('subject', 'Sans objet')
+            briefing_parts.append(f"Un message de {sender} concernant {subject}.")
 
     briefing_parts.append("Je vous souhaite une excellente journée !")
 

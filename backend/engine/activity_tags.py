@@ -4,7 +4,7 @@ from typing import List, Dict, Set, Union
 # --- CONSTANTES D'ITEMS COMMUNS (Pour éviter la répétition) ---
 _BASE_TOILETTE = ["Trousse de toilette", "Brosse à dents", "Dentifrice", "Déo"]
 _BASE_DOUCHE_SPORT = ["Serviette", "Gel douche", "Shampoing", "Deo", "Change propre"]
-_BASE_PISCINE = ["Maillot de bain", "Bonnet", "Lunettes de nage", "Serviette microfibre", "Pièce casier/Jet"]
+_BASE_PISCINE = ["Maillot de bain", "Bonnet", "Lunettes de nage", "Serviette microfibre", "Pièce casier ou Jeton"]
 _BASE_ADMIN = ["Pièce d'identité", "Stylo noir", "Dossier complet"]
 _TECH_NOMADE = ["Smartphone", "Câble de charge", "Powerbank", "Écouteurs"]
 
