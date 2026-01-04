@@ -5,6 +5,7 @@ from backend.api import weather, calendar, settings, auth, documents, meals, bud
 from backend.engine.briefing_generator import generate_daily_briefing
 from backend.integrations.openmeteo import get_weather_forecast
 from backend.integrations.calendar_service import calendar_service
+from backend.repositories.meals import MealRepository
 import os
 
 app = FastAPI(title="Family OS API", version="0.1.0")
@@ -59,8 +60,12 @@ async def get_briefing():
         weather_data = await get_weather_forecast()
         events_data = await calendar_service.fetch_events()
         
+        # Récupération des repas
+        meal_repo = MealRepository()
+        meals_data = meal_repo.get_all_dict()
+        
         # Génération du texte
-        briefing_text = generate_daily_briefing(weather_data, events_data)
+        briefing_text = generate_daily_briefing(weather_data, events_data, meals_data)
         
         # Génération de l'audio (TTS)
         from backend.integrations.tts import generate_audio_briefing

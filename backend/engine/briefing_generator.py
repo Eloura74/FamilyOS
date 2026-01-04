@@ -1,8 +1,9 @@
 from typing import List, Dict, Any
+from datetime import datetime
 
-def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]]) -> str:
+def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}) -> str:
     """
-    Génère un texte naturel résumant la météo et l'agenda.
+    Génère un texte naturel résumant la météo, l'agenda et les repas.
     """
     
     # 1. Salutation & Météo
@@ -29,14 +30,16 @@ def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]
         # 3. Focus Sacs & Détails
         for event in events:
             title = event.get('title', 'Sans titre')
-            # On nettoie un peu le titre pour l'oral (ex: enlever les emojis si besoin, mais les TTS gèrent souvent bien)
             
             items = event.get('required_items', [])
             if items:
                 items_str = ", ".join(items[:-1]) + " et " + items[-1] if len(items) > 1 else items[0]
                 briefing_parts.append(f"Pour {title}, n'oubliez pas de préparer : {items_str}.")
-            
-            # Optionnel : dire l'heure si ce n'est pas toute la journée
-            # if not event.get('all_day'): ...
+
+    # 4. Repas (Midi)
+    today = datetime.now().strftime("%Y-%m-%d")
+    if today in meals and "lunch" in meals[today]:
+        lunch_menu = meals[today]["lunch"]
+        briefing_parts.append(f"Ce midi, à la cantine, les enfants mangeront : {lunch_menu}.")
 
     return " ".join(briefing_parts)
