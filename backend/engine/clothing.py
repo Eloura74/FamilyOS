@@ -25,11 +25,11 @@ def get_clothing_recommendation(weather_data: Dict[str, Any]) -> ClothingRecomme
 
     # Logique simple de température
     if temp < 5:
-        summary = "Il fait très froid ! Sortez couverts."
+        summary = "Il fait très froid ! Pensez à vous couvrir chaudement."
         items.extend(["Gros manteau", "Bonnet", "Echarpe", "Gants"])
         icon = "🥶"
     elif temp < 12:
-        summary = "Il fait frais, prévoyez une veste chaude."
+        summary = "Le fond de l'air est frais, prévoyez une veste chaude."
         items.extend(["Manteau", "Pull chaud"])
         icon = "😬"
     elif temp < 18:
@@ -41,7 +41,7 @@ def get_clothing_recommendation(weather_data: Dict[str, Any]) -> ClothingRecomme
         items.extend(["T-shirt", "Pantalon léger"])
         icon = "😎"
     else:
-        summary = "Il fait chaud ! Hydratez-vous."
+        summary = "Il fait chaud ! Pensez à vous hydrater."
         items.extend(["T-shirt", "Short", "Casquette"])
         icon = "🥵"
 

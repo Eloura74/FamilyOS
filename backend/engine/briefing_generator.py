@@ -42,4 +42,6 @@ def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]
         lunch_menu = meals[today]["lunch"]
         briefing_parts.append(f"Ce midi, à la cantine, les enfants mangeront : {lunch_menu}.")
 
+    briefing_parts.append("Je vous souhaite une excellente journée !")
+
     return " ".join(briefing_parts)

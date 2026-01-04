@@ -144,7 +144,7 @@ export default function Dashboard() {
 
       // Démarrage immédiat de la musique via la ref préchargée
       if (musicRef.current) {
-        musicRef.current.volume = 0.3; // Volume bas pour le fond
+        musicRef.current.volume = 0.4; // Volume bas pour le fond
         const playPromise = musicRef.current.play();
         if (playPromise !== undefined) {
           playPromise.catch((error) => {
