@@ -180,3 +180,54 @@ async def analyze_menu_image(image_path: str) -> Dict[str, Any]:
     except Exception as e:
         print(f"Erreur Analyse Menu: {e}")
         return {"error": str(e)}
+
+async def analyze_receipt_image(image_path: str) -> Dict[str, Any]:
+    """
+    Analyse une image de ticket de caisse pour extraire montant, date et catégorie.
+    """
+    if not configure_gemini():
+        return {"error": "Clé API manquante"}
+
+    try:
+        model_name = 'gemini-flash-latest'
+        model = genai.GenerativeModel(model_name)
+
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if not mime_type: mime_type = 'image/jpeg'
+        
+        image_data = Path(image_path).read_bytes()
+        cookie_picture = {'mime_type': mime_type, 'data': image_data}
+
+        prompt = """
+        Analyse ce ticket de caisse.
+        
+        Extrais les informations suivantes au format JSON :
+        {
+            "merchant": "Nom du magasin",
+            "date": "YYYY-MM-DD (Date de l'achat)",
+            "amount": 0.00 (Montant total TTC, float),
+            "category": "Catégorie (Alimentation, Maison, Transport, Loisirs, Santé, Autre)",
+            "items": ["Liste", "des", "articles", "principaux"]
+        }
+        
+        Règles :
+        1. Si la date est illisible, utilise la date d'aujourd'hui.
+        2. Pour la catégorie, déduis-la des articles achetés.
+        3. Réponds UNIQUEMENT le JSON.
+        """
+
+        response = model.generate_content([prompt, cookie_picture])
+        
+        text_response = response.text.strip()
+        start_idx = text_response.find('{')
+        end_idx = text_response.rfind('}')
+        
+        if start_idx != -1 and end_idx != -1:
+            json_str = text_response[start_idx : end_idx + 1]
+            return json.loads(json_str)
+        else:
+            raise ValueError("Pas de JSON trouvé")
+
+    except Exception as e:
+        print(f"Erreur Analyse Ticket: {e}")
+        return {"error": str(e)}

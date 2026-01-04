@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [meals, setMeals] = useState<Record<string, any>>({});
+  const [budgetStats, setBudgetStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuInputRef = useRef<HTMLInputElement>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
 
   const toggleSection = (section: string) => {
     if (expandedSection === section) {
@@ -107,7 +109,7 @@ export default function Dashboard() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setUploading(true); // On réutilise l'état uploading global pour simplifier
+    setUploading(true);
     const formData = new FormData();
     formData.append("file", file);
 
@@ -131,13 +133,51 @@ export default function Dashboard() {
     }
   };
 
+  const handleReceiptUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("http://localhost:8000/api/budget/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Erreur upload ticket");
+
+      const data = await res.json();
+      console.log("Ticket analysé:", data);
+
+      // Recharger les stats
+      const statsRes = await fetch("http://localhost:8000/api/budget/stats");
+      const statsData = await statsRes.json();
+      setBudgetStats(statsData);
+
+      alert(
+        `Ticket ajouté : ${data.expense.amount}€ (${data.expense.merchant})`
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de l'analyse du ticket.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [weatherRes, eventsRes, mealsRes] = await Promise.all([
+        const [weatherRes, eventsRes, mealsRes, budgetRes] = await Promise.all([
           fetch("http://localhost:8000/api/weather/current"),
           fetch("http://localhost:8000/api/calendar/events"),
           fetch("http://localhost:8000/api/meals"),
+          fetch("http://localhost:8000/api/budget/stats"),
         ]);
 
         if (!weatherRes.ok || !eventsRes.ok) throw new Error("Erreur réseau");
@@ -145,10 +185,12 @@ export default function Dashboard() {
         const weatherData = await weatherRes.json();
         const eventsData = await eventsRes.json();
         const mealsData = mealsRes.ok ? await mealsRes.json() : {};
+        const budgetData = budgetRes.ok ? await budgetRes.json() : null;
 
         setWeather(weatherData);
         setEvents(eventsData);
         setMeals(mealsData);
+        setBudgetStats(budgetData);
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -382,6 +424,54 @@ export default function Dashboard() {
                   );
                 })()
               )}
+            </div>
+          </div>
+
+          {/* Carte Budget */}
+          <div className="relative group overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 p-4">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-emerald-500 opacity-20 blur"></div>
+            <div className="relative">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  💸 Budget {budgetStats?.month_label}
+                </h2>
+                <button
+                  onClick={() => receiptInputRef.current?.click()}
+                  className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700 transition-colors"
+                >
+                  🧾 Scanner Ticket
+                </button>
+                <input
+                  type="file"
+                  ref={receiptInputRef}
+                  onChange={handleReceiptUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+
+              <div className="flex items-end gap-2 mb-2">
+                <span className="text-3xl font-bold text-white">
+                  {budgetStats?.monthly_total || 0}€
+                </span>
+                <span className="text-sm text-slate-400 mb-1">dépensés</span>
+              </div>
+
+              {/* Jauge simple */}
+              <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-green-500 to-emerald-400"
+                  style={{
+                    width: `${Math.min(
+                      ((budgetStats?.monthly_total || 0) / 1000) * 100,
+                      100
+                    )}%`,
+                  }}
+                ></div>
+              </div>
+              <p className="text-xs text-slate-500 mt-1 text-right">
+                Objectif: 1000€
+              </p>
             </div>
           </div>
 

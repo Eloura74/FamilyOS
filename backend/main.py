@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from backend.api import weather, calendar, settings, auth, documents, meals
+from backend.api import weather, calendar, settings, auth, documents, meals, budget
 from backend.engine.briefing_generator import generate_daily_briefing
 from backend.integrations.openmeteo import get_weather_forecast
 from backend.integrations.calendar_service import calendar_service
@@ -39,6 +39,7 @@ app.include_router(settings.router, prefix="/api/settings", tags=["settings"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
 app.include_router(meals.router, prefix="/api/meals", tags=["meals"])
+app.include_router(budget.router, prefix="/api/budget", tags=["budget"])
 
 @app.get("/")
 def read_root():

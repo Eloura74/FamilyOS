@@ -1,0 +1,25 @@
+[
+  {
+    "id": "ac56ac28-f0cc-42c9-93f9-44e37a314774",
+    "date": "2026-01-04",
+    "amount": 5.5,
+    "merchant": "SUPERMARCH\u00c9 \u00c9TOILE",
+    "category": "Alimentation",
+    "items": [
+      "PAIN CAMPAGNE",
+      "LAIT BIO 1L",
+      "POMMES 1KG"
+    ]
+  },
+  {
+    "id": "167693db-7a2d-48aa-b4fb-191a15206856",
+    "date": "2026-01-04",
+    "amount": 3.5,
+    "merchant": "BOUTIQUE CADEAUX LUNA",
+    "category": "Loisirs",
+    "items": [
+      "CARTE POSTALE",
+      "STYLO BILLE"
+    ]
+  }
+]

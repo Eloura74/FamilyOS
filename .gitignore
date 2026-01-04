@@ -3,3 +3,9 @@ __pycache__/
 .env
 *.py[cod]
 data/temp/*
+# Secrets / OAuth
+token.json
+credentials.json
+
+# Optionnel: uploads si ce sont des fichiers user temporaires
+backend/uploads/
