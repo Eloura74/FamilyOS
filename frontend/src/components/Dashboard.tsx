@@ -68,6 +68,15 @@ export default function Dashboard() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const musicRef = useRef<HTMLAudioElement | null>(null);
 
+  // Preload de la musique d'ambiance
+  useEffect(() => {
+    const music = new Audio("/sounds/ambient.mp3");
+    music.volume = 0.25;
+    music.loop = true;
+    music.preload = "auto";
+    musicRef.current = music;
+  }, []);
+
   // État pour l'upload
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -133,17 +142,16 @@ export default function Dashboard() {
     try {
       setBriefingPlaying(true);
 
-      // Démarrage de la musique d'ambiance (si dispo)
-      if (!musicRef.current) {
-        musicRef.current = new Audio("/sounds/ambient.mp3");
-        musicRef.current.volume = 0.25; // Volume bas pour le fond
-        musicRef.current.loop = true;
+      // Démarrage immédiat de la musique via la ref préchargée
+      if (musicRef.current) {
+        musicRef.current.volume = 0.3; // Volume bas pour le fond
+        const playPromise = musicRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.log("Erreur lecture musique:", error);
+          });
+        }
       }
-      musicRef.current
-        .play()
-        .catch((e) =>
-          console.log("Pas de musique d'ambiance trouvée ou erreur:", e)
-        );
 
       const res = await fetch("http://localhost:8000/api/briefing");
       if (!res.ok) throw new Error("Erreur briefing");
