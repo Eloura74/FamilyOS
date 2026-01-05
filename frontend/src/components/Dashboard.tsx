@@ -209,6 +209,8 @@ export default function Dashboard() {
     }
   };
 
+  const [settings, setSettings] = useState<any>(null);
+
   const fetchData = async (isInitial = true) => {
     if (isInitial) setLoading(true);
     try {
@@ -217,21 +219,29 @@ export default function Dashboard() {
         ? { Authorization: `Bearer ${token}` }
         : {};
 
-      const [weatherRes, eventsRes, mealsRes, budgetRes, gmailRes] =
-        await Promise.all([
-          fetch("http://localhost:8000/api/weather/current"),
-          fetch("http://localhost:8000/api/calendar/events", { headers }),
-          fetch("http://localhost:8000/api/meals", { headers }),
-          fetch("http://localhost:8000/api/budget/stats", { headers }),
-          fetch("http://localhost:8000/api/gmail/important", { headers }),
-        ]);
+      const [
+        weatherRes,
+        eventsRes,
+        mealsRes,
+        budgetRes,
+        gmailRes,
+        settingsRes,
+      ] = await Promise.all([
+        fetch("http://localhost:8000/api/weather/current"),
+        fetch("http://localhost:8000/api/calendar/events", { headers }),
+        fetch("http://localhost:8000/api/meals", { headers }),
+        fetch("http://localhost:8000/api/budget/stats", { headers }),
+        fetch("http://localhost:8000/api/gmail/important", { headers }),
+        fetch("http://localhost:8000/api/settings/", { headers }),
+      ]);
 
       if (
         weatherRes.status === 401 ||
         eventsRes.status === 401 ||
         mealsRes.status === 401 ||
         budgetRes.status === 401 ||
-        gmailRes.status === 401
+        gmailRes.status === 401 ||
+        settingsRes.status === 401
       ) {
         throw new Error("Unauthorized");
       }
@@ -243,12 +253,14 @@ export default function Dashboard() {
       const mealsData = mealsRes.ok ? await mealsRes.json() : {};
       const budgetData = budgetRes.ok ? await budgetRes.json() : null;
       const emailsData = gmailRes.ok ? await gmailRes.json() : [];
+      const settingsData = settingsRes.ok ? await settingsRes.json() : null;
 
       setWeather(weatherData);
       setEvents(eventsData);
       setMeals(mealsData);
       setBudgetStats(budgetData);
       setEmails(emailsData);
+      setSettings(settingsData);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Impossible de charger les données");
@@ -260,6 +272,28 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Auto-play briefing logic
+  useEffect(() => {
+    if (!settings?.auto_play_briefing || !settings?.briefing_time) return;
+
+    const checkTime = () => {
+      const now = new Date();
+      const currentTime = now.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      if (currentTime === settings.briefing_time && !briefingPlaying) {
+        playBriefing();
+      }
+    };
+
+    const interval = setInterval(checkTime, 60000); // Check every minute
+    checkTime(); // Check immediately
+
+    return () => clearInterval(interval);
+  }, [settings, briefingPlaying]);
 
   // Gestion globale des erreurs 401 (Token expiré)
   useEffect(() => {
@@ -439,6 +473,7 @@ export default function Dashboard() {
         return (
           <BudgetCard
             budgetStats={budgetStats}
+            budgetLimit={settings?.budget_limit || 1000}
             receiptInputRef={receiptInputRef}
             handleReceiptUpload={handleReceiptUpload}
             toggleSection={toggleSection}
@@ -473,7 +508,7 @@ export default function Dashboard() {
         <header className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-purple-400">
-              Bonjour !
+              Bonjour {settings?.nickname ? settings.nickname : ""} !
             </h1>
             <p className="text-slate-400 text-sm capitalize">{today}</p>
           </div>

@@ -1,134 +1,311 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+
+interface Settings {
+  nickname: string;
+  briefing_time: string;
+  budget_limit: number;
+  auto_play_briefing: boolean;
+}
+
+interface Expense {
+  id: string;
+  date: string;
+  amount: number;
+  merchant: string;
+  category: string;
+}
+
+interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  required_items: string[];
+}
 
 export default function Settings() {
-  const [icalUrl, setIcalUrl] = useState("");
+  const [settings, setSettings] = useState<Settings>({
+    nickname: "",
+    briefing_time: "07:00",
+    budget_limit: 1000,
+    auto_play_briefing: false,
+  });
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/settings")
-      .then((res) => res.json())
-      .then((data) => {
-        setIcalUrl(data.ical_url || "");
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setMessage({
-          type: "error",
-          text: "Impossible de charger la configuration",
-        });
-        setLoading(false);
-      });
+    fetchData();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setMessage(null);
-
+  const fetchData = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/settings", {
+      const token = localStorage.getItem("token");
+      const headers: HeadersInit = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+
+      const [settingsRes, expensesRes, eventsRes] = await Promise.all([
+        fetch("http://localhost:8000/api/settings/", { headers }),
+        fetch("http://localhost:8000/api/budget/", { headers }),
+        fetch("http://localhost:8000/api/calendar/events", { headers }),
+      ]);
+
+      if (
+        settingsRes.status === 401 ||
+        expensesRes.status === 401 ||
+        eventsRes.status === 401
+      ) {
+        throw new Error("Unauthorized");
+      }
+
+      const settingsData = await settingsRes.json();
+      const expensesData = await expensesRes.json();
+      const eventsData = await eventsRes.json();
+
+      setSettings(settingsData);
+      // Ensure expensesData is an array before setting
+      setExpenses(Array.isArray(expensesData) ? expensesData : []);
+      setEvents(Array.isArray(eventsData) ? eventsData : []);
+    } catch (error: any) {
+      console.error("Erreur chargement settings:", error);
+      if (error.message === "Unauthorized") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+        // Optionnel: Redirection vers login
+        // window.location.href = "/login";
+      } else {
+        setError("Impossible de charger les paramètres.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem("token");
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      await fetch("http://localhost:8000/api/settings/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ical_url: icalUrl }),
+        headers: headers,
+        body: JSON.stringify(settings),
       });
-
-      if (!res.ok) throw new Error("Erreur lors de la sauvegarde");
-
-      setMessage({ type: "success", text: "Configuration sauvegardée !" });
-
-      // Petit délai pour que l'utilisateur voie le message
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
-    } catch (err) {
-      console.error(err);
-      setMessage({ type: "error", text: "Erreur lors de la sauvegarde" });
+      alert("Paramètres sauvegardés !");
+    } catch (error) {
+      console.error("Erreur sauvegarde:", error);
+      alert("Erreur lors de la sauvegarde.");
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading)
+  const handleDeleteExpense = async (id: string) => {
+    if (!confirm("Supprimer cette dépense ?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const headers: HeadersInit = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+
+      const res = await fetch(
+        `http://localhost:8000/api/budget/expenses/${id}`,
+        {
+          method: "DELETE",
+          headers: headers,
+        }
+      );
+
+      if (res.ok) {
+        setExpenses(expenses.filter((e) => e.id !== id));
+      } else {
+        alert("Erreur lors de la suppression.");
+      }
+    } catch (error) {
+      console.error("Erreur suppression dépense:", error);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
-        Chargement...
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <div className="animate-pulse">Chargement...</div>
       </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{error}</p>
+          <Link
+            to="/login"
+            className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-500"
+          >
+            Se connecter
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white font-['Inter'] p-6">
-      <div className="max-w-2xl mx-auto">
-        <header className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => navigate("/")}
-            className="p-2 hover:bg-slate-800 rounded-full transition-colors"
-          >
-            ←
-          </button>
-          <h1 className="text-2xl font-bold">Réglages</h1>
-        </header>
+    <div className="min-h-screen bg-slate-950 text-white font-['Inter'] p-4 pb-20">
+      <header className="flex items-center gap-4 mb-8">
+        <Link
+          to="/"
+          className="p-2 rounded-full bg-slate-800/50 border border-slate-700 text-slate-400 hover:text-white transition-colors"
+        >
+          ⬅️
+        </Link>
+        <h1 className="text-2xl font-bold">Paramètres</h1>
+      </header>
 
-        <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
-          <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-8 max-w-md mx-auto">
+        {/* Profil */}
+        <section className="bg-slate-900/50 rounded-2xl p-5 border border-slate-800">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            👤 Profil
+          </h2>
+          <div className="space-y-4">
             <div>
-              <label
-                htmlFor="icalUrl"
-                className="block text-sm font-medium text-slate-300 mb-2"
-              >
-                URL du Calendrier (iCal / ICS)
+              <label className="block text-sm text-slate-400 mb-1">
+                Pseudo
               </label>
-              <p className="text-xs text-slate-500 mb-3">
-                Lien privé vers votre Google Agenda, iCloud ou autre. Doit se
-                terminer par .ics
-              </p>
               <input
                 type="text"
-                id="icalUrl"
-                value={icalUrl}
-                onChange={(e) => setIcalUrl(e.target.value)}
-                placeholder="https://calendar.google.com/..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                value={settings.nickname}
+                onChange={(e) =>
+                  setSettings({ ...settings, nickname: e.target.value })
+                }
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Briefing */}
+        <section className="bg-slate-900/50 rounded-2xl p-5 border border-slate-800">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            📢 Briefing Vocal
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Heure du briefing auto
+              </label>
+              <input
+                type="time"
+                value={settings.briefing_time}
+                onChange={(e) =>
+                  setSettings({ ...settings, briefing_time: e.target.value })
+                }
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-300">
+                Lecture automatique
+              </span>
+              <button
+                onClick={() =>
+                  setSettings({
+                    ...settings,
+                    auto_play_briefing: !settings.auto_play_briefing,
+                  })
+                }
+                className={`w-12 h-6 rounded-full transition-colors relative ${
+                  settings.auto_play_briefing ? "bg-blue-600" : "bg-slate-700"
+                }`}
+              >
+                <div
+                  className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.auto_play_briefing ? "left-7" : "left-1"
+                  }`}
+                ></div>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Budget */}
+        <section className="bg-slate-900/50 rounded-2xl p-5 border border-slate-800">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            💰 Budget
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Limite Mensuelle (€)
+              </label>
+              <input
+                type="number"
+                value={settings.budget_limit}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    budget_limit: parseInt(e.target.value) || 0,
+                  })
+                }
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
               />
             </div>
 
-            {message && (
-              <div
-                className={`p-4 rounded-xl ${
-                  message.type === "success"
-                    ? "bg-green-500/10 text-green-400"
-                    : "bg-red-500/10 text-red-400"
-                }`}
-              >
-                {message.text}
+            <div className="mt-6">
+              <h3 className="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">
+                Dernières Dépenses
+              </h3>
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                {expenses.length > 0 ? (
+                  expenses.slice(0, 10).map((expense) => (
+                    <div
+                      key={expense.id}
+                      className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800"
+                    >
+                      <div>
+                        <p className="font-medium text-sm">
+                          {expense.merchant}
+                        </p>
+                        <p className="text-xs text-slate-500">{expense.date}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-emerald-400">
+                          {expense.amount}€
+                        </span>
+                        <button
+                          onClick={() => handleDeleteExpense(expense.id)}
+                          className="text-slate-600 hover:text-red-400 transition-colors"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500 italic">
+                    Aucune dépense récente.
+                  </p>
+                )}
               </div>
-            )}
-
-            <div className="flex justify-end gap-4 pt-4">
-              <button
-                type="button"
-                onClick={() => navigate("/")}
-                className="px-6 py-2 text-slate-400 hover:text-white transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? "Sauvegarde..." : "Sauvegarder"}
-              </button>
             </div>
-          </form>
-        </div>
+          </div>
+        </section>
+
+        {/* Save Button */}
+        <button
+          onClick={handleSaveSettings}
+          disabled={saving}
+          className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? "Sauvegarde..." : "Enregistrer les modifications"}
+        </button>
       </div>
     </div>
   );

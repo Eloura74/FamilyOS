@@ -19,3 +19,19 @@ class BudgetRepository(JsonRepository):
             except:
                 continue
         return monthly_expenses
+
+    def delete_expense(self, expense_id: str) -> bool:
+        """Supprime une dépense par son ID."""
+        all_expenses = self.get_all()
+        initial_len = len(all_expenses)
+        
+        # Filtrer pour garder tout sauf l'ID donné
+        # On suppose que les dépenses ont un champ 'id' unique généré par JsonRepository ou manuellement
+        # Si JsonRepository utilise une liste, il faut s'assurer que les items ont des IDs.
+        # Pour l'instant, on va supposer que 'id' est présent.
+        new_expenses = [e for e in all_expenses if e.get('id') != expense_id]
+        
+        if len(new_expenses) < initial_len:
+            self.save(new_expenses)
+            return True
+        return False

@@ -1,5 +1,6 @@
 interface BudgetCardProps {
   budgetStats: any;
+  budgetLimit: number;
   receiptInputRef: React.RefObject<HTMLInputElement | null>;
   handleReceiptUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   toggleSection: (section: string) => void;
@@ -8,13 +9,14 @@ interface BudgetCardProps {
 
 export default function BudgetCard({
   budgetStats,
+  budgetLimit,
   receiptInputRef,
   handleReceiptUpload,
   toggleSection,
   expandedSection,
 }: BudgetCardProps) {
   const percentage = Math.min(
-    ((budgetStats?.monthly_total || 0) / 1000) * 100,
+    ((budgetStats?.monthly_total || 0) / budgetLimit) * 100,
     100
   );
   const isExpanded = expandedSection === "budget";
@@ -116,7 +118,7 @@ export default function BudgetCard({
                 {Math.round(percentage)}% utilisé
               </span>
               <span className="text-xs text-slate-500 font-medium">
-                Objectif: 1000€
+                Objectif: {budgetLimit}€
               </span>
             </div>
           </div>

@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
-def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}, emails: List[Dict[str, Any]] = []) -> str:
+def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}, emails: List[Dict[str, Any]] = [], nickname: str = "la famille") -> str:
     """
     Génère un texte naturel résumant la météo, l'agenda (aujourd'hui et demain) et les préparations.
     """
@@ -15,7 +15,7 @@ def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]
         weather_desc += f" {rec_summary}"
 
     briefing_parts = [
-        "Bonjour la famille !",
+        f"Bonjour {nickname} !",
         weather_desc
     ]
 

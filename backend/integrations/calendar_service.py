@@ -138,6 +138,7 @@ class CalendarService:
                         print(f"Erreur parsing items description: {e}")
 
                 events.append({
+                    "id": event['id'],
                     "title": summary,
                     "start": start,
                     "end": end,
@@ -152,5 +153,100 @@ class CalendarService:
         except Exception as e:
             print(f"Erreur API Google Calendar: {e}")
             return []
+
+    async def update_event_description(self, event_id: str, new_description: str) -> bool:
+        """Met à jour la description d'un événement."""
+        creds = self._get_credentials()
+        if not creds or not creds.valid:
+            return False
+
+        try:
+            service = build('calendar', 'v3', credentials=creds)
+            event = service.events().get(calendarId='primary', eventId=event_id).execute()
+            
+            event['description'] = new_description
+            
+            service.events().update(calendarId='primary', eventId=event_id, body=event).execute()
+            return True
+        except Exception as e:
+            print(f"Erreur update event: {e}")
+            return False
+
+    async def add_item_to_event(self, event_id: str, item: str) -> bool:
+        """Ajoute un item à la liste [ITEMS] dans la description."""
+        creds = self._get_credentials()
+        if not creds or not creds.valid:
+            return False
+
+        try:
+            service = build('calendar', 'v3', credentials=creds)
+            event = service.events().get(calendarId='primary', eventId=event_id).execute()
+            
+            description = event.get('description', '')
+            
+            # Parsing existant
+            current_items = []
+            if "[ITEMS]:" in description:
+                parts = description.split("[ITEMS]:")
+                pre_items = parts[0]
+                items_part = parts[1].split("\n")[0] # Juste la ligne des items
+                post_items = "\n".join(parts[1].split("\n")[1:]) if len(parts[1].split("\n")) > 1 else ""
+                
+                current_items = [i.strip() for i in items_part.replace(";", ",").split(",") if i.strip()]
+            else:
+                pre_items = description + "\n" if description else ""
+                post_items = ""
+            
+            if item not in current_items:
+                current_items.append(item)
+                
+            new_items_str = ", ".join(current_items)
+            new_description = f"{pre_items}[ITEMS]: {new_items_str}\n{post_items}".strip()
+            
+            event['description'] = new_description
+            service.events().update(calendarId='primary', eventId=event_id, body=event).execute()
+            return True
+        except Exception as e:
+            print(f"Erreur add item: {e}")
+            return False
+
+    async def remove_item_from_event(self, event_id: str, item: str) -> bool:
+        """Retire un item de la liste [ITEMS] dans la description."""
+        creds = self._get_credentials()
+        if not creds or not creds.valid:
+            return False
+
+        try:
+            service = build('calendar', 'v3', credentials=creds)
+            event = service.events().get(calendarId='primary', eventId=event_id).execute()
+            
+            description = event.get('description', '')
+            
+            if "[ITEMS]:" not in description:
+                return False
+
+            parts = description.split("[ITEMS]:")
+            pre_items = parts[0]
+            items_part = parts[1].split("\n")[0]
+            post_items = "\n".join(parts[1].split("\n")[1:]) if len(parts[1].split("\n")) > 1 else ""
+            
+            current_items = [i.strip() for i in items_part.replace(";", ",").split(",") if i.strip()]
+            
+            if item in current_items:
+                current_items.remove(item)
+                
+            if current_items:
+                new_items_str = ", ".join(current_items)
+                new_description = f"{pre_items}[ITEMS]: {new_items_str}\n{post_items}".strip()
+            else:
+                # Plus d'items, on enlève le tag [ITEMS]
+                new_description = f"{pre_items}\n{post_items}".strip()
+            
+            event['description'] = new_description
+            service.events().update(calendarId='primary', eventId=event_id, body=event).execute()
+            return True
+        except Exception as e:
+            print(f"Erreur remove item: {e}")
+            return False
 
 calendar_service = CalendarService()

@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 from pathlib import Path
 
-from backend.api import weather, calendar, meals, budget, documents, auth, gmail
+from backend.api import weather, calendar, meals, budget, documents, auth, gmail, settings
 from backend.integrations.tts import generate_audio_briefing
 from backend.integrations.calendar_service import calendar_service
 from backend.integrations.openmeteo import get_weather_forecast
@@ -36,6 +36,7 @@ app.include_router(budget.router, prefix="/api/budget", tags=["Budget"])
 app.include_router(documents.router, prefix="/api/documents", tags=["Documents"])
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(gmail.router, prefix="/api/gmail", tags=["Gmail"])
+app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 
 @app.get("/")
 def read_root():
@@ -54,8 +55,14 @@ async def get_briefing():
         # Récupération des emails importants
         emails = gmail_service.fetch_important_emails(limit=3)
 
+        # Récupération des paramètres pour le pseudo
+        from backend.repositories.settings import SettingsRepository
+        settings_repo = SettingsRepository()
+        settings = settings_repo.get_settings()
+        nickname = settings.get("nickname", "la famille")
+
         # 2. Génération du texte
-        briefing_text = generate_daily_briefing(weather_data, events, meals_data, emails)
+        briefing_text = generate_daily_briefing(weather_data, events, meals_data, emails, nickname)
         
         # 3. Génération Audio (TTS)
         audio_url = await generate_audio_briefing(briefing_text)

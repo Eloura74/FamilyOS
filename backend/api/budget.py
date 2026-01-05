@@ -100,3 +100,13 @@ async def upload_receipt(file: UploadFile = File(...), current_user: Dict[str, A
     except Exception as e:
         print(f"Erreur Upload Ticket: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/expenses/{expense_id}")
+async def delete_expense(expense_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
+    """
+    Supprime une dépense.
+    """
+    success = repo.delete_expense(expense_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Dépense non trouvée")
+    return {"status": "success", "message": "Dépense supprimée"}
