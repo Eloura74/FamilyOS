@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 
 interface Note {
   id: string;
@@ -21,6 +22,7 @@ export default function NotesCard({
   const [loading, setLoading] = useState(true);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const isExpanded = expandedSection === "notes";
 
@@ -127,6 +129,50 @@ export default function NotesCard({
       }
     } catch (error) {
       console.error("Erreur modification note:", error);
+    }
+  };
+
+  const handleCamera = async () => {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Prompt,
+      });
+
+      if (image.webPath) {
+        setIsAnalyzing(true);
+        const response = await fetch(image.webPath);
+        const blob = await response.blob();
+        const file = new File([blob], "note_capture.jpg", {
+          type: "image/jpeg",
+        });
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/notes/upload`,
+          {
+            method: "POST",
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            body: formData,
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.content) {
+            setNewNote(data.content);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Erreur caméra/analyse:", error);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -250,21 +296,35 @@ export default function NotesCard({
             )}
           </div>
 
-          <form onSubmit={handleAddNote} className="relative">
-            <input
-              type="text"
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Ajouter un post-it..."
-              className="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-4 pr-10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-yellow-500/50 transition-colors"
-            />
+          <form onSubmit={handleAddNote} className="relative flex gap-2">
             <button
-              type="submit"
-              disabled={!newNote.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-yellow-500 hover:bg-yellow-400 rounded-lg text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              onClick={handleCamera}
+              disabled={isAnalyzing}
+              className="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-white transition-colors disabled:opacity-50"
+              title="Scanner un post-it"
             >
-              ➕
+              {isAnalyzing ? "⏳" : "📷"}
             </button>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                placeholder={
+                  isAnalyzing ? "Analyse en cours..." : "Ajouter un post-it..."
+                }
+                disabled={isAnalyzing}
+                className="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-4 pr-10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-yellow-500/50 transition-colors disabled:opacity-50"
+              />
+              <button
+                type="submit"
+                disabled={!newNote.trim() || isAnalyzing}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-yellow-500 hover:bg-yellow-400 rounded-lg text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ➕
+              </button>
+            </div>
           </form>
         </div>
       )}

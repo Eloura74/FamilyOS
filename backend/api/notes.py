@@ -1,9 +1,38 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from backend.repositories.notes import NotesRepository
+import shutil
+import os
+from pathlib import Path
+import uuid
+from backend.integrations.gemini_vision import analyze_note_image
 
 router = APIRouter()
 notes_repo = NotesRepository()
+
+UPLOAD_DIR = Path("backend/uploads/notes")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+@router.post("/upload")
+async def upload_note_image(file: UploadFile = File(...)):
+    """
+    Upload une photo de note et retourne le texte transcrit.
+    """
+    try:
+        file_extension = os.path.splitext(file.filename)[1]
+        file_id = str(uuid.uuid4())
+        new_filename = f"{file_id}{file_extension}"
+        file_path = UPLOAD_DIR / new_filename
+
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        analysis = await analyze_note_image(str(file_path))
+        return analysis
+
+    except Exception as e:
+        print(f"Erreur upload note: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 class NoteCreate(BaseModel):
     content: str

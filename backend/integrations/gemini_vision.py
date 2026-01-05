@@ -235,3 +235,55 @@ async def analyze_receipt_image(image_path: str) -> Dict[str, Any]:
     except Exception as e:
         print(f"Erreur Analyse Ticket: {e}")
         return {"error": str(e)}
+
+async def analyze_note_image(image_path: str) -> Dict[str, Any]:
+    """
+    Analyse une image de note/post-it pour transcrire le texte.
+    """
+    if not configure_gemini():
+        return {"error": "Clé API manquante"}
+
+    try:
+        model_name = 'gemini-flash-latest'
+        model = genai.GenerativeModel(model_name)
+
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if not mime_type: mime_type = 'image/jpeg'
+        
+        image_data = Path(image_path).read_bytes()
+        cookie_picture = {'mime_type': mime_type, 'data': image_data}
+
+        prompt = """
+        Tu es un expert en OCR (Reconnaissance Optique de Caractères).
+        Ta mission est de transcrire le texte présent sur cette image (post-it, note manuscrite, papier).
+        
+        Règles :
+        1. Transcris EXACTEMENT ce qui est écrit.
+        2. Corrige uniquement les fautes d'orthographe évidentes si le mot est mal écrit mais compréhensible.
+        3. Ignore le texte d'arrière-plan non pertinent (marques, logos) si ce n'est pas le message principal.
+        4. Si c'est une liste, utilise des tirets.
+        
+        Format de sortie JSON :
+        {
+            "content": "Le texte transcrit ici...",
+            "confidence": "high/medium/low"
+        }
+        
+        Réponds UNIQUEMENT le JSON.
+        """
+
+        response = model.generate_content([prompt, cookie_picture])
+        
+        text_response = response.text.strip()
+        start_idx = text_response.find('{')
+        end_idx = text_response.rfind('}')
+        
+        if start_idx != -1 and end_idx != -1:
+            json_str = text_response[start_idx : end_idx + 1]
+            return json.loads(json_str)
+        else:
+            raise ValueError("Pas de JSON trouvé")
+
+    except Exception as e:
+        print(f"Erreur Analyse Note: {e}")
+        return {"error": str(e)}
