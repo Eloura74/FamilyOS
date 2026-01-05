@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 
-def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}, emails: List[Dict[str, Any]] = [], nickname: str = "la famille", commute_info: Optional[Dict[str, Any]] = None) -> str:
+def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}, emails: List[Dict[str, Any]] = [], nickname: str = "la famille", commute_info: Optional[Dict[str, Any]] = None, notes: List[Dict[str, Any]] = []) -> str:
     """
     Génère un texte naturel résumant la météo, l'agenda (aujourd'hui et demain) et les préparations.
     """
@@ -104,6 +104,14 @@ def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]
         duration = commute_info['duration_text']
         arrival = commute_info['target_arrival']
         briefing_parts.append(f"Côté route, pour arriver au travail à {arrival}, compte tenu du trafic, vous devriez partir vers {departure}. Le trajet durera environ {duration}.")
+
+    # 7. Notes du Frigo
+    if notes:
+        briefing_parts.append("Il y a des messages sur le frigo :")
+        for note in notes:
+            author = note.get('author', 'Quelqu\'un')
+            content = note.get('content', '')
+            briefing_parts.append(f"{author} a écrit : {content}.")
 
     briefing_parts.append("Je vous souhaite une excellente journée !")
 

@@ -37,6 +37,8 @@ app.include_router(documents.router, prefix="/api/documents", tags=["Documents"]
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(gmail.router, prefix="/api/gmail", tags=["Gmail"])
 app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
+from backend.api import notes
+app.include_router(notes.router, prefix="/api/notes", tags=["Notes"])
 
 @app.get("/")
 def read_root():
@@ -74,8 +76,13 @@ async def get_briefing():
             if traffic_result.get("success"):
                 commute_info = traffic_result
 
+        # Récupération des notes du frigo
+        from backend.repositories.notes import NotesRepository
+        notes_repo = NotesRepository()
+        notes_data = notes_repo.get_all_notes()
+
         # 2. Génération du texte
-        briefing_text = generate_daily_briefing(weather_data, events, meals_data, emails, nickname, commute_info)
+        briefing_text = generate_daily_briefing(weather_data, events, meals_data, emails, nickname, commute_info, notes_data)
         
         # 3. Génération Audio (TTS)
         audio_url = await generate_audio_briefing(briefing_text)

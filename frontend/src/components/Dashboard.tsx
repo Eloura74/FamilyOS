@@ -21,6 +21,7 @@ import BudgetCard from "./dashboard/BudgetCard";
 import ClothingCard from "./dashboard/ClothingCard";
 import CalendarCard from "./dashboard/CalendarCard";
 import GmailCard from "./dashboard/GmailCard";
+import NotesCard from "./dashboard/NotesCard";
 import SortableWidget from "./dashboard/SortableWidget";
 
 interface WeatherData {
@@ -90,6 +91,7 @@ export default function Dashboard() {
   // État pour l'ordre des widgets
   const [widgetOrder, setWidgetOrder] = useState<string[]>([
     "weather",
+    "notes",
     "gmail",
     "meals",
     "budget",
@@ -116,6 +118,10 @@ export default function Dashboard() {
         // Ajout de gmail si pas présent (migration)
         if (!parsedOrder.includes("gmail")) {
           parsedOrder.splice(1, 0, "gmail");
+        }
+        // Ajout de notes si pas présent (migration)
+        if (!parsedOrder.includes("notes")) {
+          parsedOrder.splice(1, 0, "notes");
         }
         setWidgetOrder(parsedOrder);
       } catch (e) {
@@ -496,6 +502,8 @@ export default function Dashboard() {
             expandedSection={expandedSection}
           />
         );
+      case "notes":
+        return <NotesCard />;
       default:
         return null;
     }
