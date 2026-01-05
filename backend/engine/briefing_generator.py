@@ -1,9 +1,9 @@
 from typing import List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}, emails: List[Dict[str, Any]] = []) -> str:
     """
-    Génère un texte naturel résumant la météo, l'agenda et les repas.
+    Génère un texte naturel résumant la météo, l'agenda (aujourd'hui et demain) et les préparations.
     """
     
     # 1. Salutation & Météo
@@ -19,27 +19,62 @@ def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]
         weather_desc
     ]
 
-    # 2. Agenda
-    if not events:
+    # Filtrage des événements (Aujourd'hui vs Demain)
+    now = datetime.now()
+    today_str = now.strftime("%Y-%m-%d")
+    tomorrow_str = (now + timedelta(days=1)).strftime("%Y-%m-%d")
+
+    today_events = []
+    tomorrow_events = []
+
+    for event in events:
+        # Gestion start date (ISO ou Date simple)
+        start = event.get('start', '')
+        # On garde juste la partie date YYYY-MM-DD
+        if 'T' in start:
+            date_str = start.split('T')[0]
+        else:
+            date_str = start
+        
+        if date_str == today_str:
+            today_events.append(event)
+        elif date_str == tomorrow_str:
+            tomorrow_events.append(event)
+
+    # 2. Agenda Aujourd'hui
+    if not today_events:
         briefing_parts.append("Rien de prévu au calendrier aujourd'hui. Profitez-en !")
     else:
-        count = len(events)
+        count = len(today_events)
         event_word = "événement" if count == 1 else "événements"
-        briefing_parts.append(f"Vous avez {count} {event_word} aujourd'hui.")
-
-        # 3. Focus Sacs & Détails
-        for event in events:
+        briefing_parts.append(f"Aujourd'hui, vous avez {count} {event_word}.")
+        
+        for event in today_events:
             title = event.get('title', 'Sans titre')
-            
             items = event.get('required_items', [])
+            
             if items:
                 items_str = ", ".join(items[:-1]) + " et " + items[-1] if len(items) > 1 else items[0]
-                briefing_parts.append(f"Pour {title}, n'oubliez pas de préparer : {items_str}.")
+                briefing_parts.append(f"Pour {title}, n'oubliez pas d'emporter : {items_str}.")
+            else:
+                briefing_parts.append(f"{title}.")
+
+    # 3. Agenda Demain (Préparations & Aperçu)
+    if tomorrow_events:
+        briefing_parts.append("Pour demain :")
+        for event in tomorrow_events:
+            title = event.get('title', 'Sans titre')
+            items = event.get('required_items', [])
+            
+            if items:
+                items_str = ", ".join(items[:-1]) + " et " + items[-1] if len(items) > 1 else items[0]
+                briefing_parts.append(f"Pour {title}, pensez à préparer : {items_str}.")
+            else:
+                briefing_parts.append(f"Vous avez {title}.")
 
     # 4. Repas (Midi)
-    today = datetime.now().strftime("%Y-%m-%d")
-    if today in meals and "lunch" in meals[today]:
-        lunch_menu = meals[today]["lunch"]
+    if today_str in meals and "lunch" in meals[today_str]:
+        lunch_menu = meals[today_str]["lunch"]
         briefing_parts.append(f"Ce midi, à la cantine, les enfants mangeront : {lunch_menu}.")
 
     # 5. Emails Importants
