@@ -34,11 +34,10 @@ async def test_traffic(settings: SettingsUpdate):
     """Teste la configuration trafic avec les paramètres fournis."""
     from backend.integrations.traffic_service import traffic_service
     
-    if not settings.google_maps_key or not settings.home_address or not settings.work_address:
-        raise HTTPException(status_code=400, detail="Configuration incomplète")
+    if not settings.home_address or not settings.work_address:
+        raise HTTPException(status_code=400, detail="Adresses manquantes")
         
     result = await traffic_service.get_commute_time(
-        settings.google_maps_key,
         settings.home_address,
         settings.work_address,
         settings.work_arrival_time or "09:00"

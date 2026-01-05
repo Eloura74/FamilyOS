@@ -65,9 +65,8 @@ async def get_briefing():
         
         # Récupération du temps de trajet si configuré
         commute_info = None
-        if settings.get("google_maps_key") and settings.get("home_address") and settings.get("work_address"):
+        if settings.get("home_address") and settings.get("work_address"):
             traffic_result = await traffic_service.get_commute_time(
-                settings["google_maps_key"],
                 settings["home_address"],
                 settings["work_address"],
                 settings.get("work_arrival_time", "09:00")

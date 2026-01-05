@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Autocomplete from "react-google-autocomplete";
 
 interface Settings {
   nickname: string;
@@ -10,7 +9,6 @@ interface Settings {
   home_address?: string;
   work_address?: string;
   work_arrival_time?: string;
-  google_maps_key?: string;
 }
 
 interface Expense {
@@ -309,63 +307,34 @@ export default function Settings() {
             🚗 Trafic & Trajet
           </h2>
           <div className="space-y-4">
-            {settings.google_maps_key && (
-              <>
-                <div>
-                  <label className="block text-sm text-slate-400 mb-1">
-                    Adresse Domicile
-                  </label>
-                  <Autocomplete
-                    apiKey={settings.google_maps_key}
-                    onPlaceSelected={(place) => {
-                      if (place.formatted_address) {
-                        setSettings({
-                          ...settings,
-                          home_address: place.formatted_address,
-                        });
-                      }
-                    }}
-                    options={{
-                      types: ["address"],
-                      componentRestrictions: { country: "fr" },
-                    }}
-                    defaultValue={settings.home_address || ""}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
-                    placeholder="Commencez à taper votre adresse..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-slate-400 mb-1">
-                    Adresse Travail
-                  </label>
-                  <Autocomplete
-                    apiKey={settings.google_maps_key}
-                    onPlaceSelected={(place) => {
-                      if (place.formatted_address) {
-                        setSettings({
-                          ...settings,
-                          work_address: place.formatted_address,
-                        });
-                      }
-                    }}
-                    options={{
-                      types: ["address"],
-                      componentRestrictions: { country: "fr" },
-                    }}
-                    defaultValue={settings.work_address || ""}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
-                    placeholder="Commencez à taper votre adresse..."
-                  />
-                </div>
-              </>
-            )}
-
-            {!settings.google_maps_key && (
-              <div className="p-3 bg-blue-900/20 border border-blue-800 rounded-xl text-sm text-blue-200">
-                ℹ️ Entrez votre clé API ci-dessus pour activer la recherche
-                d'adresse automatique.
-              </div>
-            )}
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Adresse Domicile
+              </label>
+              <input
+                type="text"
+                placeholder="10 rue de la Paix, Paris"
+                value={settings.home_address || ""}
+                onChange={(e) =>
+                  setSettings({ ...settings, home_address: e.target.value })
+                }
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Adresse Travail
+              </label>
+              <input
+                type="text"
+                placeholder="La Défense, Puteaux"
+                value={settings.work_address || ""}
+                onChange={(e) =>
+                  setSettings({ ...settings, work_address: e.target.value })
+                }
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+              />
+            </div>
 
             <div>
               <label className="block text-sm text-slate-400 mb-1">
@@ -383,28 +352,10 @@ export default function Settings() {
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
               />
             </div>
-            <div>
-              <label className="block text-sm text-slate-400 mb-1">
-                Clé API Google Maps
-              </label>
-              <input
-                type="password"
-                placeholder="AIzaSy..."
-                value={settings.google_maps_key || ""}
-                onChange={(e) =>
-                  setSettings({ ...settings, google_maps_key: e.target.value })
-                }
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                Nécessaire pour le calcul du trafic et l'autocomplétion.
-                <br />
-                <span className="text-yellow-500">
-                  ⚠ Assurez-vous d'activer "Places API" et "Maps JavaScript API"
-                  sur Google Cloud.
-                </span>
-              </p>
-            </div>
+
+            <p className="text-xs text-slate-500 mt-1">
+              Le calcul du trafic utilise Waze (gratuit, sans clé API).
+            </p>
 
             <button
               onClick={async () => {
