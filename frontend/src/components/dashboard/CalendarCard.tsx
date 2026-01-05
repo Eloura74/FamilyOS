@@ -9,41 +9,54 @@ export default function CalendarCard({
   toggleSection,
   expandedSection,
 }: CalendarCardProps) {
+  const isExpanded = expandedSection === "calendar";
+
   return (
-    <div className="rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden transition-all duration-300 select-none">
+    <div
+      className={`relative group overflow-hidden rounded-3xl border transition-all duration-300 select-none ${
+        isExpanded
+          ? "bg-slate-900/80 border-slate-700/50 shadow-2xl"
+          : "bg-white/5 border-white/10 hover:bg-white/10"
+      } backdrop-blur-xl`}
+    >
+      {/* Glow Effect */}
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"></div>
+
       <button
-        onClick={(e) => {
-          // e.stopPropagation(); // On laisse propager pour le drag
-          toggleSection("calendar");
-        }}
-        // onPointerDown={(e) => e.stopPropagation()} // On laisse propager pour le drag
-        className="w-full p-4 flex items-center justify-between bg-slate-800/30 active:bg-slate-800/50 transition-colors cursor-pointer"
+        onClick={() => toggleSection("calendar")}
+        className="w-full p-5 flex items-center justify-between cursor-pointer group relative z-10"
       >
-        <div className="flex items-center gap-3">
-          <span className="text-xl">📅</span>
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-2xl text-blue-400">
+            📅
+          </div>
           <div className="text-left">
-            <h2 className="font-bold text-white text-sm">Agenda Familial</h2>
-            <p className="text-xs text-emerald-300">
+            <h2 className="font-bold text-white text-base">Agenda Familial</h2>
+            <p className="text-xs text-blue-300 font-medium">
               {events.length} événement(s) à venir
             </p>
           </div>
         </div>
         <span
-          className={`transform transition-transform ${
-            expandedSection === "calendar" ? "rotate-180" : ""
-          } text-slate-500`}
+          className={`transform transition-transform duration-300 ${
+            isExpanded
+              ? "rotate-180 text-white"
+              : "text-slate-500 group-hover:text-slate-300"
+          }`}
         >
           ▼
         </span>
       </button>
 
-      {expandedSection === "calendar" && (
-        <div className="p-4 pt-0 border-t border-slate-800/50 animate-in slide-in-from-top-2 duration-200 cursor-default">
-          <div className="space-y-3 mt-4">
+      {isExpanded && (
+        <div className="p-5 pt-0 border-t border-white/5 animate-in slide-in-from-top-2 duration-300 cursor-default relative z-10">
+          <div className="space-y-6 mt-4">
             {events.length === 0 ? (
-              <p className="text-slate-400 italic text-sm text-center py-2">
-                Rien de prévu pour le moment.
-              </p>
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
+                <p className="text-slate-400 italic text-sm">
+                  Rien de prévu pour le moment.
+                </p>
+              </div>
             ) : (
               <div className="space-y-8">
                 {Object.entries(
@@ -73,16 +86,15 @@ export default function CalendarCard({
                     dateLabel = "Demain";
                   }
 
-                  // Capitalize first letter
                   dateLabel =
                     dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
 
                   return (
                     <div key={date}>
-                      <h3 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4 pl-2 border-b border-slate-800 pb-2">
+                      <h3 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-4 pl-2 border-b border-white/10 pb-2">
                         {dateLabel}
                       </h3>
-                      <div className="relative border-l-2 border-slate-800 ml-3 space-y-6 py-2 my-2">
+                      <div className="relative border-l-2 border-white/10 ml-3 space-y-6 py-2 my-2">
                         {dayEvents.map((event: any, idx: number) => {
                           const eventDate = new Date(event.start);
                           const isPast = event.end
@@ -90,20 +102,23 @@ export default function CalendarCard({
                             : eventDate < new Date();
 
                           return (
-                            <div key={idx} className="relative pl-6">
+                            <div
+                              key={idx}
+                              className="relative pl-6 group/event"
+                            >
                               {/* Point sur la ligne */}
                               <div
                                 className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-2 transition-all ${
                                   isPast
-                                    ? "bg-slate-900 border-slate-700"
-                                    : "bg-blue-600 border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                                    ? "bg-slate-800 border-slate-600"
+                                    : "bg-blue-500 border-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.5)] group-hover/event:scale-110"
                                 }`}
                               ></div>
 
                               {/* Heure */}
                               <div
                                 className={`text-xs font-bold mb-1 ${
-                                  isPast ? "text-slate-600" : "text-blue-400"
+                                  isPast ? "text-slate-500" : "text-blue-400"
                                 }`}
                               >
                                 {event.all_day
@@ -116,10 +131,10 @@ export default function CalendarCard({
 
                               {/* Carte Événement */}
                               <div
-                                className={`p-3 rounded-xl border transition-all ${
+                                className={`p-4 rounded-2xl border transition-all ${
                                   isPast
-                                    ? "bg-slate-900/50 border-slate-800 opacity-60 grayscale-[0.5]"
-                                    : "bg-slate-800 border-slate-700 shadow-lg"
+                                    ? "bg-white/5 border-white/5 opacity-60 grayscale-[0.5]"
+                                    : "bg-white/10 border-white/10 hover:bg-white/15 hover:border-white/20 shadow-lg"
                                 }`}
                               >
                                 <div className="flex items-start justify-between gap-2">
@@ -132,7 +147,7 @@ export default function CalendarCard({
                                       {event.title}
                                     </h3>
                                     {event.location && (
-                                      <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                                      <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                                         📍 {event.location}
                                       </p>
                                     )}
@@ -141,11 +156,11 @@ export default function CalendarCard({
 
                                 {/* Tags */}
                                 {event.tags && event.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-2">
+                                  <div className="flex flex-wrap gap-1.5 mt-3">
                                     {event.tags.map((tag: string) => (
                                       <span
                                         key={tag}
-                                        className="px-1.5 py-0.5 bg-blue-500/10 text-blue-300 text-[10px] rounded uppercase font-bold tracking-wider border border-blue-500/20"
+                                        className="px-2 py-0.5 bg-blue-500/10 text-blue-300 text-[10px] rounded-lg uppercase font-bold tracking-wider border border-blue-500/20"
                                       >
                                         {tag}
                                       </span>
@@ -157,7 +172,7 @@ export default function CalendarCard({
                                 {event.required_items &&
                                   event.required_items.length > 0 && (
                                     <div
-                                      className={`mt-3 rounded-lg p-2 border ${
+                                      className={`mt-3 rounded-xl p-3 border ${
                                         isPast
                                           ? "bg-slate-800/50 border-slate-700/50"
                                           : "bg-blue-500/10 border-blue-500/20"
@@ -171,7 +186,7 @@ export default function CalendarCard({
                                         }`}
                                       >
                                         <span className="text-base">🎒</span>
-                                        <span className="text-[10px] font-bold uppercase">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">
                                           Sac à préparer
                                         </span>
                                       </div>
@@ -180,7 +195,7 @@ export default function CalendarCard({
                                           (item: string, i: number) => (
                                             <span
                                               key={i}
-                                              className="px-2 py-1 bg-slate-900/80 text-slate-300 text-[10px] rounded border border-slate-700/50"
+                                              className="px-2 py-1 bg-slate-900/80 text-slate-300 text-[10px] rounded-lg border border-slate-700/50 font-medium"
                                             >
                                               {item}
                                             </span>

@@ -410,7 +410,13 @@ export default function Dashboard() {
   const renderWidget = (id: string) => {
     switch (id) {
       case "weather":
-        return <WeatherCard weather={weather} />;
+        return (
+          <WeatherCard
+            weather={weather}
+            toggleSection={toggleSection}
+            expandedSection={expandedSection}
+          />
+        );
       case "gmail":
         return (
           <GmailCard
@@ -435,6 +441,8 @@ export default function Dashboard() {
             budgetStats={budgetStats}
             receiptInputRef={receiptInputRef}
             handleReceiptUpload={handleReceiptUpload}
+            toggleSection={toggleSection}
+            expandedSection={expandedSection}
           />
         );
       case "clothing":
