@@ -72,7 +72,7 @@ export default function Dashboard() {
 
   // Preload de la musique d'ambiance
   useEffect(() => {
-    const music = new Audio("/sounds/ambient.mp3");
+    const music = new Audio("/sounds/ambientWithoutVoice.mp3");
     music.volume = 0.4;
     music.loop = true;
     music.preload = "auto";
