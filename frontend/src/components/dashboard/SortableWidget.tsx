@@ -30,7 +30,7 @@ export default function SortableWidget({ id, children }: SortableWidgetProps) {
       {/* Pour l'instant on applique les listeners sur tout le composant, mais on pourrait ajouter une poignée spécifique */}
       <div
         {...listeners}
-        className="cursor-grab active:cursor-grabbing touch-none"
+        className="cursor-grab active:cursor-grabbing touch-manipulation"
       >
         {children}
       </div>
