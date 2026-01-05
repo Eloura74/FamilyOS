@@ -75,6 +75,12 @@ def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]
     # 4. Repas (Midi)
     if today_str in meals and "lunch" in meals[today_str]:
         lunch_menu = meals[today_str]["lunch"]
+        # Nettoyage pour le vocal : "Entrée, Plat et Dessert"
+        if "+" in lunch_menu:
+            parts = [p.strip() for p in lunch_menu.split("+")]
+            if len(parts) > 1:
+                lunch_menu = ", ".join(parts[:-1]) + " et " + parts[-1]
+        
         briefing_parts.append(f"Ce midi, à la cantine, les enfants mangeront : {lunch_menu}.")
 
     # 5. Emails Importants
