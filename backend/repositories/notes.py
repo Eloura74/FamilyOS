@@ -37,6 +37,16 @@ class NotesRepository:
         self._save_notes(notes)
         return new_note
 
+    def update_note(self, note_id: str, content: str) -> Dict[str, Any] | None:
+        notes = self.get_all_notes()
+        for note in notes:
+            if note["id"] == note_id:
+                note["content"] = content
+                # On ne change pas la date de création, mais on pourrait ajouter une date de modif
+                self._save_notes(notes)
+                return note
+        return None
+
     def delete_note(self, note_id: str) -> bool:
         notes = self.get_all_notes()
         initial_len = len(notes)

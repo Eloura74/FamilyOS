@@ -503,7 +503,12 @@ export default function Dashboard() {
           />
         );
       case "notes":
-        return <NotesCard />;
+        return (
+          <NotesCard
+            toggleSection={toggleSection}
+            expandedSection={expandedSection}
+          />
+        );
       default:
         return null;
     }

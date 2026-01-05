@@ -23,3 +23,13 @@ def delete_note(note_id: str):
     if not success:
         raise HTTPException(status_code=404, detail="Note non trouvée")
     return {"status": "success"}
+
+class NoteUpdate(BaseModel):
+    content: str
+
+@router.put("/{note_id}")
+def update_note(note_id: str, note: NoteUpdate):
+    updated_note = notes_repo.update_note(note_id, note.content)
+    if not updated_note:
+        raise HTTPException(status_code=404, detail="Note non trouvée")
+    return updated_note
