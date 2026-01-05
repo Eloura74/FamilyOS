@@ -54,10 +54,16 @@ async def analyze_image_with_gemini(image_path: str) -> Dict[str, Any]:
         2. Détermine l'action de routage appropriée.
         
         RÈGLES DE ROUTAGE (Priorité Absolue) :
-        - Si tu vois "Note", "Memo", "Post-it" ou si c'est une note manuscrite générique -> Type = "Note"
-        - Si tu vois "Facture", "Ticket", "Total", "TTC" -> Type = "Facture"
-        - Si tu vois "Rendez-vous", "RDV", "Meeting", "Consultation" -> Type = "Event"
-        - Si tu vois "Menu", "Cantine", "Repas" -> Type = "Menu"
+        
+        --- CAS SPÉCIAL : NOTES MANUSCRITES / POST-ITS ---
+        Si c'est une note manuscrite ou un post-it, analyse le CONTENU :
+        A. Si ça contient une ACTION ou un RDV (ex: "Appeler Docteur", "Prendre RDV", "Aller chez...", "Réserver", "Penser à...") -> Type = "Event" (Routing: add_event)
+        B. Si c'est juste une info passive, une liste de courses, ou une pensée (ex: "Acheter du lait", "Code wifi...", "Idée cadeau") -> Type = "Note" (Routing: add_note)
+        
+        --- AUTRES CAS ---
+        - "Facture", "Ticket", "Total", "TTC" -> Type = "Facture" (Routing: add_expense)
+        - "Rendez-vous", "RDV", "Meeting", "Consultation" (Document officiel) -> Type = "Event" (Routing: add_event)
+        - "Menu", "Cantine", "Repas" -> Type = "Menu" (Routing: add_menu)
         
         Extrais les informations clés sous format JSON strict :
         {

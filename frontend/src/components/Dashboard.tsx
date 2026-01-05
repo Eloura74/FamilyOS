@@ -90,6 +90,43 @@ export default function Dashboard() {
   const menuInputRef = useRef<HTMLInputElement>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
 
+  // État pour la confirmation d'événement (IA)
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [proposedEvent, setProposedEvent] = useState<any>(null);
+
+  const handleConfirmEvent = async () => {
+    if (!proposedEvent) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/calendar/events`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(proposedEvent),
+        }
+      );
+
+      if (res.ok) {
+        setShowEventModal(false);
+        setProposedEvent(null);
+        await fetchData(false);
+        alert("📅 Événement confirmé et ajouté !");
+      } else {
+        throw new Error("Erreur création événement");
+      }
+    } catch (error) {
+      console.error("Erreur confirmation event:", error);
+      alert("Erreur lors de la création de l'événement.");
+    }
+  };
+
   // État pour l'ordre des widgets
   const [widgetOrder, setWidgetOrder] = useState<string[]>([
     "weather",
@@ -349,9 +386,17 @@ export default function Dashboard() {
       console.log("Fichier uploadé:", data);
       setAnalysisResult(data.analysis);
 
-      if (data.event_created) {
-        await fetchData(false); // Rafraîchissement silencieux
-        // Petit délai pour laisser l'animation se faire si besoin
+      // Si l'IA propose un événement, on ouvre la modale de confirmation
+      if (
+        data.action_taken === "Proposed Event" &&
+        data.analysis.proposed_event
+      ) {
+        setProposedEvent(data.analysis.proposed_event);
+        setShowEventModal(true);
+        setShowUploadModal(false); // On ferme la modale d'upload pour afficher celle de l'event
+      } else if (data.event_created) {
+        // Cas legacy ou fallback
+        await fetchData(false);
         setTimeout(() => alert("📅 Événement ajouté à l'agenda !"), 500);
       }
     } catch (err) {
@@ -736,6 +781,84 @@ export default function Dashboard() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Modale Confirmation Événement */}
+        {showEventModal && proposedEvent && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-slate-900 border border-blue-500/30 rounded-2xl p-6 w-full max-w-sm relative shadow-2xl shadow-blue-900/20">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span>📅</span> Confirmer le RDV
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs text-slate-400 uppercase font-bold">
+                    Titre
+                  </label>
+                  <input
+                    type="text"
+                    value={proposedEvent.summary}
+                    onChange={(e) =>
+                      setProposedEvent({
+                        ...proposedEvent,
+                        summary: e.target.value,
+                      })
+                    }
+                    className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white mt-1 focus:border-blue-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-400 uppercase font-bold">
+                    Date & Heure
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={proposedEvent.start}
+                    onChange={(e) =>
+                      setProposedEvent({
+                        ...proposedEvent,
+                        start: e.target.value,
+                      })
+                    }
+                    className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white mt-1 focus:border-blue-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-400 uppercase font-bold">
+                    Description
+                  </label>
+                  <textarea
+                    value={proposedEvent.description}
+                    onChange={(e) =>
+                      setProposedEvent({
+                        ...proposedEvent,
+                        description: e.target.value,
+                      })
+                    }
+                    className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white mt-1 focus:border-blue-500 outline-none h-24 resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowEventModal(false)}
+                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleConfirmEvent}
+                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-600/20"
+                  >
+                    Confirmer
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

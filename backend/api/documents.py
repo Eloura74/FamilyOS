@@ -88,16 +88,22 @@ async def upload_document(file: UploadFile = File(...)):
                     items_str = ", ".join(action_items)
                     description += f"\n\n[ITEMS]: {items_str}"
 
+                # On prépare les données mais on ne crée PAS l'événement automatiquement
+                # On laisse le frontend demander confirmation à l'utilisateur
                 event_data = {
                     "summary": analysis_result.get("title", "Document scanné"),
                     "start": analysis_result["date"],
                     "description": description
                 }
                 
-                await calendar_service.create_event(event_data)
-                action_taken = "Added to Calendar"
+                # await calendar_service.create_event(event_data) <-- Désactivé pour confirmation manuelle
+                action_taken = "Proposed Event"
+                
+                # On ajoute les données structurées à la réponse pour le pré-remplissage
+                analysis_result["proposed_event"] = event_data
+                
             except Exception as e:
-                print(f"Erreur création événement automatique : {e}")
+                print(f"Erreur préparation événement : {e}")
 
         return {
             "id": file_id,
