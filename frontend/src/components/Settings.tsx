@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import Autocomplete from "react-google-autocomplete";
 
 interface Settings {
   nickname: string;
   briefing_time: string;
   budget_limit: number;
   auto_play_briefing: boolean;
+  home_address?: string;
+  work_address?: string;
+  work_arrival_time?: string;
+  google_maps_key?: string;
 }
 
 interface Expense {
@@ -295,6 +300,140 @@ export default function Settings() {
                 )}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Trafic & Trajet */}
+        <section className="bg-slate-900/50 rounded-2xl p-5 border border-slate-800">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            🚗 Trafic & Trajet
+          </h2>
+          <div className="space-y-4">
+            {settings.google_maps_key && (
+              <>
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Adresse Domicile
+                  </label>
+                  <Autocomplete
+                    apiKey={settings.google_maps_key}
+                    onPlaceSelected={(place) => {
+                      if (place.formatted_address) {
+                        setSettings({
+                          ...settings,
+                          home_address: place.formatted_address,
+                        });
+                      }
+                    }}
+                    options={{
+                      types: ["address"],
+                      componentRestrictions: { country: "fr" },
+                    }}
+                    defaultValue={settings.home_address || ""}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+                    placeholder="Commencez à taper votre adresse..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Adresse Travail
+                  </label>
+                  <Autocomplete
+                    apiKey={settings.google_maps_key}
+                    onPlaceSelected={(place) => {
+                      if (place.formatted_address) {
+                        setSettings({
+                          ...settings,
+                          work_address: place.formatted_address,
+                        });
+                      }
+                    }}
+                    options={{
+                      types: ["address"],
+                      componentRestrictions: { country: "fr" },
+                    }}
+                    defaultValue={settings.work_address || ""}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+                    placeholder="Commencez à taper votre adresse..."
+                  />
+                </div>
+              </>
+            )}
+
+            {!settings.google_maps_key && (
+              <div className="p-3 bg-blue-900/20 border border-blue-800 rounded-xl text-sm text-blue-200">
+                ℹ️ Entrez votre clé API ci-dessus pour activer la recherche
+                d'adresse automatique.
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Heure d'arrivée souhaitée
+              </label>
+              <input
+                type="time"
+                value={settings.work_arrival_time || "09:00"}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    work_arrival_time: e.target.value,
+                  })
+                }
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Clé API Google Maps
+              </label>
+              <input
+                type="password"
+                placeholder="AIzaSy..."
+                value={settings.google_maps_key || ""}
+                onChange={(e) =>
+                  setSettings({ ...settings, google_maps_key: e.target.value })
+                }
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Nécessaire pour le calcul du trafic et l'autocomplétion.
+                <br />
+                <span className="text-yellow-500">
+                  ⚠ Assurez-vous d'activer "Places API" et "Maps JavaScript API"
+                  sur Google Cloud.
+                </span>
+              </p>
+            </div>
+
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch(
+                    "http://localhost:8000/api/settings/test-traffic",
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(settings),
+                    }
+                  );
+                  if (res.ok) {
+                    const data = await res.json();
+                    alert(
+                      `Succès ! Trajet estimé : ${data.duration_text}. Départ conseillé : ${data.departure_time}`
+                    );
+                  } else {
+                    const err = await res.json();
+                    alert("Erreur : " + err.detail);
+                  }
+                } catch (e) {
+                  alert("Erreur de connexion au serveur");
+                }
+              }}
+              className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition-colors border border-slate-700"
+            >
+              Tester la configuration
+            </button>
           </div>
         </section>
 

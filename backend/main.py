@@ -55,14 +55,28 @@ async def get_briefing():
         # Récupération des emails importants
         emails = gmail_service.fetch_important_emails(limit=3)
 
-        # Récupération des paramètres pour le pseudo
+        # Récupération des paramètres pour le pseudo et le trafic
         from backend.repositories.settings import SettingsRepository
+        from backend.integrations.traffic_service import traffic_service
+        
         settings_repo = SettingsRepository()
         settings = settings_repo.get_settings()
         nickname = settings.get("nickname", "la famille")
+        
+        # Récupération du temps de trajet si configuré
+        commute_info = None
+        if settings.get("google_maps_key") and settings.get("home_address") and settings.get("work_address"):
+            traffic_result = await traffic_service.get_commute_time(
+                settings["google_maps_key"],
+                settings["home_address"],
+                settings["work_address"],
+                settings.get("work_arrival_time", "09:00")
+            )
+            if traffic_result.get("success"):
+                commute_info = traffic_result
 
         # 2. Génération du texte
-        briefing_text = generate_daily_briefing(weather_data, events, meals_data, emails, nickname)
+        briefing_text = generate_daily_briefing(weather_data, events, meals_data, emails, nickname, commute_info)
         
         # 3. Génération Audio (TTS)
         audio_url = await generate_audio_briefing(briefing_text)

@@ -1,7 +1,7 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 
-def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}, emails: List[Dict[str, Any]] = [], nickname: str = "la famille") -> str:
+def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]], meals: Dict[str, Any] = {}, emails: List[Dict[str, Any]] = [], nickname: str = "la famille", commute_info: Optional[Dict[str, Any]] = None) -> str:
     """
     Génère un texte naturel résumant la météo, l'agenda (aujourd'hui et demain) et les préparations.
     """
@@ -91,6 +91,19 @@ def generate_daily_briefing(weather: Dict[str, Any], events: List[Dict[str, Any]
             sender = email.get('sender', 'Inconnu')
             subject = email.get('subject', 'Sans objet')
             briefing_parts.append(f"Un message de {sender} concernant {subject}.")
+
+    # 6. Trafic & Trajet (Si configuré)
+    # Note: Idéalement, on passerait le commute_info en argument, mais pour simplifier on peut le faire ici ou dans main.py
+    # Pour l'instant, on suppose que main.py l'a passé ou qu'on l'ajoute ici si on avait l'info.
+    # Mais attendons, main.py ne passe pas encore commute_info.
+    # Modifions la signature de la fonction pour accepter commute_info.
+
+    # 6. Trafic & Trajet
+    if commute_info:
+        departure = commute_info['departure_time']
+        duration = commute_info['duration_text']
+        arrival = commute_info['target_arrival']
+        briefing_parts.append(f"Côté route, pour arriver au travail à {arrival}, compte tenu du trafic, vous devriez partir vers {departure}. Le trajet durera environ {duration}.")
 
     briefing_parts.append("Je vous souhaite une excellente journée !")
 
