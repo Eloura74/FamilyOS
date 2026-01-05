@@ -12,4 +12,5 @@ echo JAVA_HOME defini sur: %JAVA_HOME%
 REM 2. Lancement de Capacitor
 echo [2/2] Construction et lancement sur le telephone...
 cd frontend
-npx cap run android
+call npx cap sync
+call npx cap run android

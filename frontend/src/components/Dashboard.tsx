@@ -24,6 +24,7 @@ import CalendarCard from "./dashboard/CalendarCard";
 import GmailCard from "./dashboard/GmailCard";
 import NotesCard from "./dashboard/NotesCard";
 import SortableWidget from "./dashboard/SortableWidget";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 
 interface WeatherData {
   current: {
@@ -625,11 +626,43 @@ export default function Dashboard() {
 
                   <div className="space-y-3">
                     <button
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={async () => {
+                        try {
+                          const image = await Camera.getPhoto({
+                            quality: 90,
+                            allowEditing: false,
+                            resultType: CameraResultType.Uri,
+                            source: CameraSource.Prompt, // Retour au menu de choix : Caméra ou Galerie
+                          });
+
+                          if (image.webPath) {
+                            // Conversion de l'URI en Blob pour l'upload
+                            const response = await fetch(image.webPath);
+                            const blob = await response.blob();
+                            const file = new File(
+                              [blob],
+                              "camera_capture.jpg",
+                              {
+                                type: "image/jpeg",
+                              }
+                            );
+
+                            // Simulation de l'event pour réutiliser la logique existante
+                            const event = {
+                              target: { files: [file] },
+                            } as unknown as React.ChangeEvent<HTMLInputElement>;
+                            handleFileUpload(event);
+                          }
+                        } catch (e) {
+                          console.log("Camera cancelled or error", e);
+                          alert("Erreur Caméra: " + JSON.stringify(e));
+                        }
+                      }}
                       className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
                     >
                       <span>📸</span> Prendre une photo
                     </button>
+                    {/* Input file caché conservé en fallback si besoin, ou supprimé si on veut full natif */}
                     <input
                       type="file"
                       ref={fileInputRef}

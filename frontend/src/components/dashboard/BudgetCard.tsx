@@ -78,15 +78,41 @@ export default function BudgetCard({
                 {budgetStats?.month_label || "Mensuel"}
               </span>
               <button
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
-                  receiptInputRef.current?.click();
+                  try {
+                    // @ts-ignore
+                    const { Camera, CameraResultType, CameraSource } =
+                      await import("@capacitor/camera");
+                    const image = await Camera.getPhoto({
+                      quality: 90,
+                      allowEditing: false,
+                      resultType: CameraResultType.Uri,
+                      source: CameraSource.Prompt,
+                    });
+
+                    if (image.webPath) {
+                      const response = await fetch(image.webPath);
+                      const blob = await response.blob();
+                      const file = new File([blob], "receipt.jpg", {
+                        type: "image/jpeg",
+                      });
+                      const event = {
+                        target: { files: [file] },
+                      } as unknown as React.ChangeEvent<HTMLInputElement>;
+                      handleReceiptUpload(event);
+                    }
+                  } catch (err) {
+                    console.error(err);
+                    // alert("Erreur: " + JSON.stringify(err));
+                  }
                 }}
                 onPointerDown={(e) => e.stopPropagation()}
                 className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl border border-white/10 transition-colors text-xs font-medium"
               >
                 <span>📷</span> Scanner Ticket
               </button>
+              {/* Input caché conservé pour compatibilité web si besoin */}
               <input
                 type="file"
                 ref={receiptInputRef}

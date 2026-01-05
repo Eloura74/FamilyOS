@@ -2,6 +2,10 @@
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  /* Variables globales pour Ionic PWA Elements */
+  --ion-background-color: #0f172a;
+  --ion-text-color: #f8fafc;
 }
 
 body {
@@ -32,4 +36,31 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-700;
+}
+
+/* Styles pour @ionic/pwa-elements (Caméra Popup) */
+/* Styles pour @ionic/pwa-elements (Caméra Popup) */
+html {
+  --ion-background-color: #0f172a;
+  --ion-text-color: #f8fafc;
+}
+
+pwa-action-sheet,
+pwa-camera-modal {
+  /* Force les variables CSS pour traverser le Shadow DOM */
+  --background: #0f172a !important;
+  --button-background: #0f172a !important;
+  --button-color: #f8fafc !important;
+  --button-background-selected: #1e293b !important;
+  --text-color: #f8fafc !important;
+
+  /* Gestion du backdrop */
+  --backdrop-opacity: 0.7 !important;
+
+  /* S'assurer que les clics passent */
+  touch-action: auto !important;
+}
+
+pwa-action-sheet::part(backdrop) {
+  cursor: pointer;
 }
