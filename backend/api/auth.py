@@ -206,7 +206,8 @@ async def google_callback(request: Request):
         access_token = create_access_token(data={"sub": user["email"], "role": user["role"]})
         
         # 5. Redirection Frontend avec Token
-        return RedirectResponse(f"http://localhost:5173/auth/callback?token={access_token}")
+        FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+        return RedirectResponse(f"{FRONTEND_URL}/auth/callback?token={access_token}")
         
     except Exception as e:
         print(f"Erreur Google Callback: {e}")

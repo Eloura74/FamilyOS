@@ -34,7 +34,9 @@ export default function NotesCard({
       const headers: HeadersInit = token
         ? { Authorization: `Bearer ${token}` }
         : {};
-      const res = await fetch("http://localhost:8000/api/notes/", { headers });
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notes/`, {
+        headers,
+      });
       if (res.ok) {
         const data = await res.json();
         setNotes(data);
@@ -57,7 +59,7 @@ export default function NotesCard({
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      const res = await fetch("http://localhost:8000/api/notes/", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notes/`, {
         method: "POST",
         headers,
         body: JSON.stringify({ content: newNote, author: "Famille" }),
@@ -78,7 +80,7 @@ export default function NotesCard({
       const headers: HeadersInit = token
         ? { Authorization: `Bearer ${token}` }
         : {};
-      await fetch(`http://localhost:8000/api/notes/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/notes/${id}`, {
         method: "DELETE",
         headers,
       });
@@ -108,11 +110,14 @@ export default function NotesCard({
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      const res = await fetch(`http://localhost:8000/api/notes/${id}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({ content: editContent }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/notes/${id}`,
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({ content: editContent }),
+        }
+      );
 
       if (res.ok) {
         setNotes(

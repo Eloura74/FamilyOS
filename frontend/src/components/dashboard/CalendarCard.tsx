@@ -20,7 +20,7 @@ export default function CalendarCard({
       } backdrop-blur-xl`}
     >
       {/* Glow Effect */}
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"></div>
+      <div className="absolute -inset-0.5 bg-linear-to-r from-blue-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"></div>
 
       <button
         onClick={() => toggleSection("calendar")}
@@ -66,7 +66,7 @@ export default function CalendarCard({
                     groups[date].push(event);
                     return groups;
                   }, {} as Record<string, any[]>)
-                ).map(([date, dayEvents]: [string, any[]]) => {
+                ).map(([date, dayEvents]: [string, any]) => {
                   const dateObj = new Date(date);
                   const today = new Date();
                   const tomorrow = new Date(today);

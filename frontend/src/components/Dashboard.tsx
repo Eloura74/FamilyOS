@@ -167,7 +167,7 @@ export default function Dashboard() {
         }
       }
 
-      const res = await fetch("http://localhost:8000/api/briefing");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/briefing`);
       if (!res.ok) throw new Error("Erreur briefing");
       const data = await res.json();
 
@@ -177,7 +177,9 @@ export default function Dashboard() {
           audioRef.current = null;
         }
 
-        const audio = new Audio(`http://localhost:8000${data.audio_url}`);
+        const audio = new Audio(
+          `${import.meta.env.VITE_API_URL}${data.audio_url}`
+        );
         audioRef.current = audio;
 
         audio.onended = () => {
@@ -233,12 +235,16 @@ export default function Dashboard() {
         gmailRes,
         settingsRes,
       ] = await Promise.all([
-        fetch("http://localhost:8000/api/weather/current"),
-        fetch("http://localhost:8000/api/calendar/events", { headers }),
-        fetch("http://localhost:8000/api/meals", { headers }),
-        fetch("http://localhost:8000/api/budget/stats", { headers }),
-        fetch("http://localhost:8000/api/gmail/important", { headers }),
-        fetch("http://localhost:8000/api/settings/", { headers }),
+        fetch(`${import.meta.env.VITE_API_URL}/api/weather/current`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/calendar/events`, {
+          headers,
+        }),
+        fetch(`${import.meta.env.VITE_API_URL}/api/meals`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL}/api/budget/stats`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL}/api/gmail/important`, {
+          headers,
+        }),
+        fetch(`${import.meta.env.VITE_API_URL}/api/settings/`, { headers }),
       ]);
 
       if (
@@ -321,10 +327,13 @@ export default function Dashboard() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:8000/api/documents/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/documents/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!res.ok) throw new Error("Erreur upload");
 
@@ -357,11 +366,14 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/api/meals/upload", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/meals/upload`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        }
+      );
 
       if (!res.ok) throw new Error("Erreur upload menu");
 
@@ -389,11 +401,14 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/api/budget/upload", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/budget/upload`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        }
+      );
 
       if (!res.ok) throw new Error("Erreur upload ticket");
 
@@ -401,7 +416,9 @@ export default function Dashboard() {
       console.log("Ticket analysé:", data);
 
       // Recharger les stats
-      const statsRes = await fetch("http://localhost:8000/api/budget/stats");
+      const statsRes = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/budget/stats`
+      );
       const statsData = await statsRes.json();
       setBudgetStats(statsData);
 

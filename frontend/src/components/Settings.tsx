@@ -19,13 +19,6 @@ interface Expense {
   category: string;
 }
 
-interface CalendarEvent {
-  id: string;
-  title: string;
-  start: string;
-  required_items: string[];
-}
-
 export default function Settings() {
   const [settings, setSettings] = useState<Settings>({
     nickname: "",
@@ -34,7 +27,6 @@ export default function Settings() {
     auto_play_briefing: false,
   });
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,28 +42,21 @@ export default function Settings() {
         ? { Authorization: `Bearer ${token}` }
         : {};
 
-      const [settingsRes, expensesRes, eventsRes] = await Promise.all([
-        fetch("http://localhost:8000/api/settings/", { headers }),
-        fetch("http://localhost:8000/api/budget/", { headers }),
-        fetch("http://localhost:8000/api/calendar/events", { headers }),
+      const [settingsRes, expensesRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/api/settings/`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL}/api/budget/`, { headers }),
       ]);
 
-      if (
-        settingsRes.status === 401 ||
-        expensesRes.status === 401 ||
-        eventsRes.status === 401
-      ) {
+      if (settingsRes.status === 401 || expensesRes.status === 401) {
         throw new Error("Unauthorized");
       }
 
       const settingsData = await settingsRes.json();
       const expensesData = await expensesRes.json();
-      const eventsData = await eventsRes.json();
 
       setSettings(settingsData);
       // Ensure expensesData is an array before setting
       setExpenses(Array.isArray(expensesData) ? expensesData : []);
-      setEvents(Array.isArray(eventsData) ? eventsData : []);
     } catch (error: any) {
       console.error("Erreur chargement settings:", error);
       if (error.message === "Unauthorized") {
@@ -95,7 +80,7 @@ export default function Settings() {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      await fetch("http://localhost:8000/api/settings/", {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/settings/`, {
         method: "POST",
         headers: headers,
         body: JSON.stringify(settings),
@@ -118,7 +103,7 @@ export default function Settings() {
         : {};
 
       const res = await fetch(
-        `http://localhost:8000/api/budget/expenses/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/budget/expenses/${id}`,
         {
           method: "DELETE",
           headers: headers,
@@ -361,7 +346,7 @@ export default function Settings() {
               onClick={async () => {
                 try {
                   const res = await fetch(
-                    "http://localhost:8000/api/settings/test-traffic",
+                    `${import.meta.env.VITE_API_URL}/api/settings/test-traffic`,
                     {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
