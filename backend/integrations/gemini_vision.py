@@ -49,22 +49,35 @@ async def analyze_image_with_gemini(image_path: str) -> Dict[str, Any]:
         Tu es un assistant personnel intelligent pour une famille.
         Analyse ce document ou cette image.
         
-        Identifie le type de document (ex: Menu de cantine, Invitation anniversaire, Facture, Ticket de caisse, Flyer événement, Autre).
+        TA MISSION :
+        1. Identifie le type de document en cherchant des mots-clés spécifiques.
+        2. Détermine l'action de routage appropriée.
+        
+        RÈGLES DE ROUTAGE (Priorité Absolue) :
+        - Si tu vois "Note", "Memo", "Post-it" ou si c'est une note manuscrite générique -> Type = "Note"
+        - Si tu vois "Facture", "Ticket", "Total", "TTC" -> Type = "Facture"
+        - Si tu vois "Rendez-vous", "RDV", "Meeting", "Consultation" -> Type = "Event"
+        - Si tu vois "Menu", "Cantine", "Repas" -> Type = "Menu"
         
         Extrais les informations clés sous format JSON strict :
         {
-            "type": "Type du document",
+            "type": "Note | Facture | Event | Menu | Autre",
+            "routing_action": "add_note | add_expense | add_event | none",
+            
             "title": "Titre principal ou résumé court",
             "date": "Date de l'événement ou du document (YYYY-MM-DD) ou null",
             "summary": "Résumé en 1 ou 2 phrases.",
             "action_items": ["Liste", "des choses", "à faire"],
             
-            "amount": 0.00, // (Uniquement si Facture/Ticket) Montant total
-            "merchant": "Nom du magasin", // (Uniquement si Facture/Ticket)
-            "category": "Catégorie" // (Uniquement si Facture/Ticket: Alimentation, Maison, etc.)
+            // CHAMPS SPÉCIFIQUES
+            "amount": 0.00, // (Si Facture)
+            "merchant": "Nom du magasin", // (Si Facture)
+            "category": "Catégorie", // (Si Facture)
+            
+            "note_content": "Contenu complet du texte" // (Si Note)
         }
         
-        Réponds UNIQUEMENT le JSON, sans markdown ```json ```.
+        Réponds UNIQUEMENT le JSON.
         """
 
         response = model.generate_content([prompt, cookie_picture])

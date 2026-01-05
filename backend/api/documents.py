@@ -6,8 +6,17 @@ from typing import List
 import uuid
 from backend.integrations.gemini_vision import analyze_image_with_gemini
 from backend.integrations.calendar_service import calendar_service
+from backend.repositories.notes import NotesRepository
+from backend.repositories.budget import BudgetRepository
+from backend.repositories.meals import MealRepository
+from datetime import datetime
 
 router = APIRouter()
+
+# Repositories
+notes_repo = NotesRepository()
+budget_repo = BudgetRepository()
+meal_repo = MealRepository()
 
 # Dossier de stockage des uploads
 UPLOAD_DIR = Path("backend/uploads")
@@ -16,7 +25,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 @router.post("/upload")
 async def upload_document(file: UploadFile = File(...)):
     """
-    Upload un document (image ou PDF) pour analyse.
+    Upload un document, l'analyse et le route vers le bon module (Agenda, Frigo, Budget, Menus).
     """
     try:
         # Génération d'un nom de fichier unique
@@ -31,29 +40,62 @@ async def upload_document(file: UploadFile = File(...)):
             
         # Analyse IA
         analysis_result = await analyze_image_with_gemini(str(file_path))
+        
+        routing_action = analysis_result.get("routing_action", "none")
+        doc_type = analysis_result.get("type", "Autre")
+        
+        action_taken = "Analyzed only"
+        
+        # --- ROUTAGE INTELLIGENT ---
+        
+        # 1. ROUTAGE VERS FRIGO (Notes/Post-its)
+        if routing_action == "add_note" or doc_type in ["Note", "Post-it"]:
+            content = analysis_result.get("note_content") or analysis_result.get("summary") or "Note sans contenu"
+            notes_repo.add_note(content, author="IA Assistant")
+            action_taken = "Added to Fridge"
+            
+        # 2. ROUTAGE VERS BUDGET (Factures/Tickets)
+        elif routing_action == "add_expense" or doc_type in ["Facture", "Ticket"]:
+            new_expense = {
+                "id": str(uuid.uuid4()),
+                "date": analysis_result.get("date", datetime.now().strftime("%Y-%m-%d")),
+                "amount": analysis_result.get("amount", 0.0),
+                "merchant": analysis_result.get("merchant", "Inconnu"),
+                "category": analysis_result.get("category", "Autre"),
+                "items": analysis_result.get("items", [])
+            }
+            budget_repo.add(new_expense)
+            action_taken = "Added to Budget"
 
-        # AUTOMATISATION : Création d'événement si une date est détectée
-        event_created = False
-        if "date" in analysis_result and analysis_result["date"]:
+        # 3. ROUTAGE VERS MENUS (Cantine/Repas)
+        elif routing_action == "add_menu" or doc_type in ["Menu", "Cantine"]:
+            # Note: Pour les menus, l'analyse générique n'est peut-être pas aussi détaillée que analyze_menu_image
+            # Mais on tente quand même d'extraire ce qu'on peut ou on redirige
+            # Pour l'instant, on stocke juste l'info si possible, mais le format JSON des menus est complexe.
+            # Idéalement, il faudrait rappeler analyze_menu_image si on détecte un menu, 
+            # mais pour simplifier on va supposer que l'utilisateur utilise le bouton dédié pour les menus complexes.
+            # Si Gemini a extrait des repas (format spécifique), on pourrait les ajouter.
+            pass 
+            # TODO: Implémenter le parsing complexe des menus ici si besoin.
+            action_taken = "Identified as Menu (Manual review suggested)"
+
+        # 4. ROUTAGE VERS AGENDA (Events/RDV) - Fallback par défaut si date détectée
+        elif routing_action == "add_event" or (analysis_result.get("date") and doc_type not in ["Facture", "Ticket"]):
             try:
-                # Formatage de la description avec les items
                 description = analysis_result.get("summary", "")
                 action_items = analysis_result.get("action_items", [])
-                
                 if action_items:
                     items_str = ", ".join(action_items)
                     description += f"\n\n[ITEMS]: {items_str}"
 
                 event_data = {
                     "summary": analysis_result.get("title", "Document scanné"),
-                    "start": analysis_result["date"], # Format YYYY-MM-DD attendu pour all-day
+                    "start": analysis_result["date"],
                     "description": description
                 }
                 
                 await calendar_service.create_event(event_data)
-                event_created = True
-                print(f"Événement créé : {event_data['summary']} pour le {event_data['start']}")
-                
+                action_taken = "Added to Calendar"
             except Exception as e:
                 print(f"Erreur création événement automatique : {e}")
 
@@ -62,9 +104,9 @@ async def upload_document(file: UploadFile = File(...)):
             "filename": new_filename,
             "original_filename": file.filename,
             "path": str(file_path),
-            "message": "Fichier uploadé et analysé" + (" (Événement ajouté au calendrier)" if event_created else ""),
+            "message": f"Document analysé et traité : {action_taken}",
             "analysis": analysis_result,
-            "event_created": event_created
+            "action_taken": action_taken
         }
 
     except Exception as e:
