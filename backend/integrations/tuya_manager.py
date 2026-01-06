@@ -208,63 +208,100 @@ class TuyaManager:
         return False
 
     async def _progressive_wake(self, device_id: str, duration: int, target_val: int):
-        """Augmente progressivement la luminosité"""
+        """Augmente progressivement la luminosité ou ouvre les volets"""
         import asyncio
         print(f"DEBUG: Starting progressive wake for {device_id}. Duration: {duration}s, Target: {target_val}")
         
         # Find device to check category
         device = next((d for d in self.devices if d["id"] == device_id), None)
-        switch_code = "switch_led" # Default for lights
-        if device:
-            if device.get("category") in ["cz", "pc"]:
-                switch_code = "switch_1"
-            elif device.get("category") in ["dj", "xdd"]:
-                switch_code = "switch_led"
+        category = device.get("category") if device else ""
+        
+        is_blind = category in ["cl", "kg"] # cl = curtain, kg = switch (sometimes used for blinds)
         
         try:
-            # 1. Allumer la lampe au minimum (Envoi combiné propre)
-            commands = [
-                {"code": "bright_value", "value": 10},
-                {"code": "bright_value_v2", "value": 10},
-                {"code": switch_code, "value": True}
-            ]
-            
-            success = False
-            if self.cloud:
-                try:
-                    res = self.cloud.sendcommand(device_id, {"commands": commands})
-                    if res.get("success"):
-                        success = True
-                    else:
-                        print(f"WARN: Combined command failed: {res}")
-                except Exception as e:
-                    print(f"WARN: Error sending combined command: {e}")
-
-            # Fallback: If combined failed or we are not sure, ensure it's ON
-            if not success:
-                print("DEBUG: Fallback to standard ON command")
-                self.send_command(device_id, "ON")
-                await asyncio.sleep(0.5)
-                self.send_dps(device_id, {"bright_value": 10, "bright_value_v2": 10})
-            
-            await asyncio.sleep(1)
-            
-            # 2. Calculer les étapes
-            steps = 30 
-            step_duration = duration / steps
-            step_val = (target_val - 10) / steps
-            
-            current_val = 10
-            for i in range(steps):
-                current_val += step_val
-                val_int = int(current_val)
-                # print(f"DEBUG: Progressive step {i+1}/{steps}: Setting brightness to {val_int}")
+            if is_blind:
+                # --- LOGIQUE VOLETS / STORES ---
+                # Target val est 0-1000, on convertit en 0-100
+                target_percent = int(target_val / 10)
+                if target_percent > 100: target_percent = 100
                 
-                self.send_dps(device_id, {
-                    "bright_value": val_int,
-                    "bright_value_v2": val_int
-                })
-                await asyncio.sleep(step_duration)
+                print(f"DEBUG: Blind detected. Target percent: {target_percent}%")
+                
+                # 1. S'assurer qu'il est fermé (ou à 0)
+                # On ne ferme pas forcément pour ne pas plonger dans le noir si c'est déjà ouvert,
+                # mais pour un réveil on suppose qu'on part de 0.
+                # Pour être sûr, on peut envoyer 0 au début.
+                self.send_dps(device_id, {"percent_control": 0})
+                await asyncio.sleep(2)
+                
+                # 2. Progression
+                steps = 10 # Moins d'étapes pour les moteurs (éviter de trop solliciter)
+                step_duration = duration / steps
+                step_val = target_percent / steps
+                
+                current_val = 0
+                for i in range(steps):
+                    current_val += step_val
+                    val_int = int(current_val)
+                    
+                    # Certains moteurs n'aiment pas les petites incrémentations, 
+                    # mais on tente le coup.
+                    self.send_dps(device_id, {"percent_control": val_int})
+                    await asyncio.sleep(step_duration)
+                    
+                # Final set
+                self.send_dps(device_id, {"percent_control": target_percent})
+                
+            else:
+                # --- LOGIQUE LUMIERES ---
+                switch_code = "switch_led" # Default for lights
+                if category in ["cz", "pc"]:
+                    switch_code = "switch_1"
+                elif category in ["dj", "xdd"]:
+                    switch_code = "switch_led"
+            
+                # 1. Allumer la lampe au minimum (Envoi combiné propre)
+                commands = [
+                    {"code": "bright_value", "value": 10},
+                    {"code": "bright_value_v2", "value": 10},
+                    {"code": switch_code, "value": True}
+                ]
+                
+                success = False
+                if self.cloud:
+                    try:
+                        res = self.cloud.sendcommand(device_id, {"commands": commands})
+                        if res.get("success"):
+                            success = True
+                        else:
+                            print(f"WARN: Combined command failed: {res}")
+                    except Exception as e:
+                        print(f"WARN: Error sending combined command: {e}")
+
+                # Fallback
+                if not success:
+                    print("DEBUG: Fallback to standard ON command")
+                    self.send_command(device_id, "ON")
+                    await asyncio.sleep(0.5)
+                    self.send_dps(device_id, {"bright_value": 10, "bright_value_v2": 10})
+                
+                await asyncio.sleep(1)
+                
+                # 2. Calculer les étapes
+                steps = 30 
+                step_duration = duration / steps
+                step_val = (target_val - 10) / steps
+                
+                current_val = 10
+                for i in range(steps):
+                    current_val += step_val
+                    val_int = int(current_val)
+                    
+                    self.send_dps(device_id, {
+                        "bright_value": val_int,
+                        "bright_value_v2": val_int
+                    })
+                    await asyncio.sleep(step_duration)
                 
             print(f"DEBUG: Progressive wake finished for {device_id}")
             

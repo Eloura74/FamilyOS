@@ -357,6 +357,20 @@ export default function Settings() {
   >(null);
   const [actionForm, setActionForm] = useState<ActionConfig>({ type: "ON" });
 
+  // Toast State
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success"
+  ) => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const openActionModal = (device: TuyaDevice, briefingId: string) => {
     setEditingActionDevice(device);
     setEditingActionBriefingId(briefingId);
@@ -396,9 +410,10 @@ export default function Settings() {
         }
       );
       setShowActionModal(false);
+      showToast("Action configurée avec succès !");
     } catch (error) {
       console.error("Erreur save action:", error);
-      alert("Erreur lors de la sauvegarde de l'action.");
+      showToast("Erreur lors de la sauvegarde de l'action.", "error");
     }
   };
 
@@ -503,10 +518,10 @@ export default function Settings() {
         body: JSON.stringify(settings),
       });
 
-      alert("Paramètres sauvegardés !");
+      showToast("Paramètres sauvegardés avec succès !");
     } catch (error) {
       console.error("Erreur sauvegarde:", error);
-      alert("Erreur lors de la sauvegarde.");
+      showToast("Erreur lors de la sauvegarde.", "error");
     } finally {
       setSaving(false);
     }
@@ -523,13 +538,13 @@ export default function Settings() {
       if (res.ok) {
         const devices = await res.json();
         setTuyaDevices(devices);
-        alert(`Succès ! ${devices.length} appareils trouvés.`);
+        showToast(`Succès ! ${devices.length} appareils trouvés.`);
       } else {
         const err = await res.json();
-        alert("Erreur de synchronisation : " + err.detail);
+        showToast("Erreur de synchronisation : " + err.detail, "error");
       }
     } catch (error) {
-      alert("Erreur de connexion au serveur.");
+      showToast("Erreur de connexion au serveur.", "error");
     } finally {
       setSyncingTuya(false);
     }
@@ -617,11 +632,11 @@ export default function Settings() {
       );
       if (res.ok) {
         const data = await res.json();
-        if (data.success) alert("Commande envoyée !");
-        else alert("Echec de la commande (appareil hors ligne ?)");
+        if (data.success) showToast("Commande envoyée !");
+        else showToast("Echec de la commande (appareil hors ligne ?)", "error");
       }
     } catch (error) {
-      alert("Erreur réseau");
+      showToast("Erreur réseau", "error");
     }
   };
 
@@ -643,8 +658,9 @@ export default function Settings() {
 
       if (res.ok) {
         setExpenses(expenses.filter((e) => e.id !== id));
+        showToast("Dépense supprimée.");
       } else {
-        alert("Erreur lors de la suppression.");
+        showToast("Erreur lors de la suppression.", "error");
       }
     } catch (error) {
       console.error("Erreur suppression dépense:", error);
@@ -691,7 +707,7 @@ export default function Settings() {
 
   const saveBriefing = () => {
     if (!briefingForm.title) {
-      alert("Veuillez donner un titre au briefing.");
+      showToast("Veuillez donner un titre au briefing.", "error");
       return;
     }
 
@@ -707,6 +723,7 @@ export default function Settings() {
 
     setSettings({ ...settings, briefings: updatedBriefings });
     setShowBriefingModal(false);
+    showToast("Briefing sauvegardé !");
   };
 
   const deleteBriefing = (id: string) => {
@@ -807,6 +824,24 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-['Inter'] pb-32">
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div
+            className={`px-6 py-3 rounded-full shadow-2xl backdrop-blur-xl border flex items-center gap-3 ${
+              toast.type === "success"
+                ? "bg-green-500/20 border-green-500/50 text-green-200"
+                : "bg-red-500/20 border-red-500/50 text-red-200"
+            }`}
+          >
+            <span className="text-xl">
+              {toast.type === "success" ? "✓" : "⚠️"}
+            </span>
+            <span className="font-medium text-sm">{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-slate-950/80 backdrop-blur-md border-b border-slate-800 p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
