@@ -192,11 +192,22 @@ class TuyaManager:
              
         return False
 
-    def execute_wakeup_routine(self):
-        """Executes actions for all devices marked for wakeup routine."""
+    def execute_wakeup_routine(self, briefing_id: str = None):
+        """Executes actions for devices linked to the specific briefing."""
         results = []
         for device in self.devices:
-            if device.get("wakeup_routine"):
+            should_trigger = False
+            
+            if briefing_id:
+                # New logic: check if device is linked to this briefing
+                if briefing_id in device.get("briefing_ids", []):
+                    should_trigger = True
+            else:
+                # Legacy logic: check boolean flag
+                if device.get("wakeup_routine"):
+                    should_trigger = True
+
+            if should_trigger:
                 action = device.get("wakeup_action", "ON")
                 try:
                     self.send_command(device["id"], action)

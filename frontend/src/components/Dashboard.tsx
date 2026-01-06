@@ -197,7 +197,7 @@ export default function Dashboard() {
     }
   };
 
-  const playBriefing = async () => {
+  const playBriefing = async (briefingId?: string) => {
     try {
       setBriefingPlaying(true);
 
@@ -212,7 +212,12 @@ export default function Dashboard() {
         }
       }
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/briefing`);
+      let url = `${import.meta.env.VITE_API_URL}/api/briefing`;
+      if (briefingId) {
+        url += `?briefing_id=${briefingId}`;
+      }
+
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Erreur briefing");
       const data = await res.json();
 
@@ -332,7 +337,7 @@ export default function Dashboard() {
 
   // Auto-play briefing logic
   useEffect(() => {
-    if (!settings?.auto_play_briefing || !settings?.briefing_time) return;
+    if (!settings?.auto_play_briefing || !settings?.briefings) return;
 
     const checkTime = () => {
       const now = new Date();
@@ -341,8 +346,14 @@ export default function Dashboard() {
         minute: "2-digit",
       });
 
-      if (currentTime === settings.briefing_time && !briefingPlaying) {
-        playBriefing();
+      // Check if any enabled briefing matches current time
+      const matchingBriefing = settings.briefings.find(
+        (b: any) => b.enabled && b.time === currentTime
+      );
+
+      if (matchingBriefing && !briefingPlaying) {
+        console.log("Auto-playing briefing:", matchingBriefing.title);
+        playBriefing(matchingBriefing.id);
       }
     };
 

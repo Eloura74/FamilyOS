@@ -97,7 +97,7 @@ def read_root():
     return {"message": "FamilyOS Backend is running"}
 
 @app.get("/api/briefing")
-async def get_briefing():
+async def get_briefing(briefing_id: str = None):
     try:
         # 1. Récupération des données
         weather_data = await get_weather_forecast()
@@ -134,6 +134,7 @@ async def get_briefing():
         notes_data = notes_repo.get_all_notes()
 
         # 2. Génération du texte
+        # TODO: Utiliser briefing_id pour filtrer le contenu si nécessaire (ex: briefing du soir sans météo ?)
         briefing_text = generate_daily_briefing(weather_data, events, meals_data, emails, nickname, commute_info, notes_data)
         
         # 3. Génération Audio (TTS)
@@ -143,7 +144,7 @@ async def get_briefing():
         # On lance la routine domotique en tâche de fond (ou on attend, c'est rapide)
         # Ici on l'appelle simplement pour qu'elle s'exécute au moment du briefing
         try:
-            tuya_manager.execute_wakeup_routine()
+            tuya_manager.execute_wakeup_routine(briefing_id)
         except Exception as e:
             print(f"Erreur domotique: {e}")
         
