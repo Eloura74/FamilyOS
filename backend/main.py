@@ -64,6 +64,14 @@ async def sync_tuya(credentials: dict):
 async def get_tuya_devices():
     return tuya_manager.get_devices()
 
+@app.get("/api/tuya/credentials")
+async def get_tuya_credentials():
+    creds = tuya_manager.get_credentials()
+    # On renvoie tout pour que le user n'ait pas à retaper, 
+    # mais en prod on pourrait masquer le secret.
+    # Ici le user veut que ça reste enregistré pour resynchro.
+    return creds
+
 @app.post("/api/tuya/device/{device_id}/settings")
 async def update_tuya_settings(device_id: str, settings: dict):
     updated = tuya_manager.update_device_settings(device_id, settings)

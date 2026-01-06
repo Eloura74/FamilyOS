@@ -10,6 +10,9 @@ class TuyaManager:
         self.devices = self._load_devices()
         self.cloud = None
 
+    def get_credentials(self) -> Dict[str, str]:
+        return self.credentials
+
     def _load_credentials(self) -> Dict[str, str]:
         if os.path.exists(self.storage_file):
             try:

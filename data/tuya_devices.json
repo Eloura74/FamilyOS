@@ -196,21 +196,21 @@
             "wakeup_action": "ON"
         },
         {
-            "name": "Interrupteur Bureau",
-            "id": "bf48d537526a98951anule",
-            "key": "c9a7594a7fc8800d",
-            "category": "wxkg",
-            "product_name": "\u4e00\u8def\u65e0\u7ebf\u5f00\u5173_Zigbee",
-            "online": false,
-            "wakeup_routine": false,
-            "wakeup_action": "ON"
-        },
-        {
             "name": "Capteur Garage",
             "id": "bf47e945a89287e2feznih",
             "key": "c9a7594a7fc8800d",
             "category": "mcs",
             "product_name": "Door & Windows Sensor",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Interrupteur Bureau",
+            "id": "bf48d537526a98951anule",
+            "key": "c9a7594a7fc8800d",
+            "category": "wxkg",
+            "product_name": "\u4e00\u8def\u65e0\u7ebf\u5f00\u5173_Zigbee",
             "online": false,
             "wakeup_routine": false,
             "wakeup_action": "ON"

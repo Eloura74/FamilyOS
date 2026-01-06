@@ -1,5 +1,23 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Settings {
   nickname: string;
@@ -35,6 +53,143 @@ interface TuyaDevice {
   wakeup_action: string;
 }
 
+// Sortable Device Item Component
+function SortableDeviceItem({
+  device,
+  handleToggleWakeup,
+  handleTestDevice,
+}: {
+  device: TuyaDevice;
+  handleToggleWakeup: (device: TuyaDevice) => void;
+  handleTestDevice: (deviceId: string, action: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: device.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : "auto",
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden transition-all"
+    >
+      {/* Header Compact (Always visible) */}
+      <div className="p-3 flex items-center justify-between gap-3">
+        {/* Drag Handle & Info */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-1 text-slate-600 hover:text-slate-400 touch-none"
+          >
+            ☰
+          </div>
+          <div
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            <div className="flex items-center gap-2">
+              <p className="font-bold text-sm text-white truncate">
+                {device.name}
+              </p>
+              <div
+                className={`h-2 w-2 rounded-full shrink-0 ${
+                  device.online ? "bg-green-500" : "bg-red-500"
+                }`}
+                title={device.online ? "En ligne" : "Hors ligne"}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Action (Wakeup Toggle) */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider hidden sm:block">
+            Réveil
+          </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggleWakeup(device);
+            }}
+            className={`w-8 h-4 rounded-full transition-colors relative shrink-0 ${
+              device.wakeup_routine ? "bg-green-500" : "bg-slate-700"
+            }`}
+            title="Activer au réveil"
+          >
+            <div
+              className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${
+                device.wakeup_routine ? "left-4.5" : "left-0.5"
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Expand/Collapse Chevron */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-slate-500 p-1"
+        >
+          <span
+            className={`block transition-transform duration-200 ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+          >
+            ▼
+          </span>
+        </button>
+      </div>
+
+      {/* Expanded Content */}
+      {isExpanded && (
+        <div className="px-3 pb-3 pt-0 animate-in slide-in-from-top-1 duration-200">
+          <div className="h-px bg-slate-800 mb-3" />
+
+          {/* Technical Info */}
+          <div className="mb-3 text-xs text-slate-500 space-y-1">
+            <p>
+              Modèle:{" "}
+              <span className="text-slate-400">{device.product_name}</span>
+            </p>
+            <p>
+              ID: <span className="text-slate-400 font-mono">{device.id}</span>
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleTestDevice(device.id, "ON")}
+              className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded-lg transition-colors font-medium"
+            >
+              Allumer
+            </button>
+            <button
+              onClick={() => handleTestDevice(device.id, "OFF")}
+              className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded-lg transition-colors font-medium"
+            >
+              Eteindre
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Settings() {
   const [settings, setSettings] = useState<Settings>({
     nickname: "",
@@ -65,6 +220,15 @@ export default function Settings() {
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
   };
+
+  // DnD Sensors
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 10 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
+    }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   useEffect(() => {
     fetchData();
@@ -113,6 +277,17 @@ export default function Settings() {
         const data = await res.json();
         setTuyaDevices(data);
       }
+
+      // Fetch credentials too
+      const credsRes = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/tuya/credentials`
+      );
+      if (credsRes.ok) {
+        const creds = await credsRes.json();
+        if (creds && creds.api_key) {
+          setTuyaCredentials(creds);
+        }
+      }
     } catch (error) {
       console.error("Erreur chargement Tuya:", error);
     }
@@ -132,6 +307,11 @@ export default function Settings() {
         headers: headers,
         body: JSON.stringify(settings),
       });
+
+      // Save device order if needed (currently local only for this session unless we add an endpoint)
+      // For now, we just save settings.
+      // Ideally, we should save the device order to the backend too.
+
       alert("Paramètres sauvegardés !");
     } catch (error) {
       console.error("Erreur sauvegarde:", error);
@@ -236,6 +416,18 @@ export default function Settings() {
       }
     } catch (error) {
       console.error("Erreur suppression dépense:", error);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setTuyaDevices((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over?.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
     }
   };
 
@@ -443,70 +635,41 @@ export default function Settings() {
 
           {/* Liste des appareils */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">
-              Appareils détectés ({tuyaDevices.length})
-            </h3>
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
+                Appareils détectés ({tuyaDevices.length})
+              </h3>
+              <p className="text-xs text-slate-500">
+                Activez l'option "RÉVEIL" pour que l'appareil s'allume
+                automatiquement lors de votre briefing matinal.
+              </p>
+            </div>
             {tuyaDevices.length === 0 ? (
               <p className="text-sm text-slate-500 italic">
                 Aucun appareil configuré.
               </p>
             ) : (
-              tuyaDevices.map((device) => (
-                <div
-                  key={device.id}
-                  className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col gap-3"
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={tuyaDevices.map((d) => d.id)}
+                  strategy={verticalListSortingStrategy}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-bold text-sm text-white">
-                        {device.name}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {device.product_name}
-                      </p>
-                    </div>
-                    <div
-                      className={`h-2 w-2 rounded-full ${
-                        device.online ? "bg-green-500" : "bg-red-500"
-                      }`}
-                      title={device.online ? "En ligne" : "Hors ligne"}
-                    ></div>
-                  </div>
-
-                  <div className="flex items-center justify-between bg-slate-900/50 p-2 rounded-lg">
-                    <span className="text-xs text-slate-300 font-medium">
-                      Activer au réveil
-                    </span>
-                    <button
-                      onClick={() => handleToggleWakeup(device)}
-                      className={`w-10 h-5 rounded-full transition-colors relative ${
-                        device.wakeup_routine ? "bg-green-500" : "bg-slate-700"
-                      }`}
-                    >
-                      <div
-                        className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-transform ${
-                          device.wakeup_routine ? "left-6" : "left-1"
-                        }`}
+                  <div className="space-y-2">
+                    {tuyaDevices.map((device) => (
+                      <SortableDeviceItem
+                        key={device.id}
+                        device={device}
+                        handleToggleWakeup={handleToggleWakeup}
+                        handleTestDevice={handleTestDevice}
                       />
-                    </button>
+                    ))}
                   </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleTestDevice(device.id, "ON")}
-                      className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded-lg transition-colors"
-                    >
-                      Allumer
-                    </button>
-                    <button
-                      onClick={() => handleTestDevice(device.id, "OFF")}
-                      className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded-lg transition-colors"
-                    >
-                      Eteindre
-                    </button>
-                  </div>
-                </div>
-              ))
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </SettingsSection>
