@@ -617,14 +617,27 @@ export default function Settings() {
     }
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
       setTuyaDevices((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over?.id);
-        return arrayMove(items, oldIndex, newIndex);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+
+        // Save new order to backend
+        const orderedIds = newItems.map((item) => item.id);
+        fetch(`${import.meta.env.VITE_API_URL}/api/tuya/devices/order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ordered_ids: orderedIds }),
+        }).catch((err) => {
+          console.error("Failed to save order:", err);
+          showToast("Erreur lors de la sauvegarde de l'ordre", "error");
+        });
+
+        return newItems;
       });
     }
   };
@@ -773,7 +786,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-['Inter'] pb-32">
+    <div className="min-h-screen min-h-safe bg-slate-950 text-white font-['Inter'] pb-32 pt-safe pb-safe">
       {/* Toast Notification */}
       {toast && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">

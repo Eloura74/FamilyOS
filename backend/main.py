@@ -91,6 +91,16 @@ async def update_tuya_settings(device_id: str, settings: dict):
         raise HTTPException(status_code=404, detail="Device not found")
     return updated
 
+@app.post("/api/tuya/devices/order")
+async def update_tuya_device_order(payload: dict):
+    # payload expects {"ordered_ids": ["id1", "id2", ...]}
+    ordered_ids = payload.get("ordered_ids", [])
+    if not ordered_ids:
+        raise HTTPException(status_code=400, detail="ordered_ids is required")
+    
+    success = tuya_manager.update_device_order(ordered_ids)
+    return {"success": success}
+
 @app.post("/api/tuya/device/{device_id}/command")
 async def send_tuya_command(device_id: str, command: dict):
     # command expects {"action": "ON" | "OFF"}

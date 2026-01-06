@@ -39,7 +39,6 @@ export default function Login() {
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            setDebugError("Connexion en cours...");
 
             const formData = new FormData(e.currentTarget);
             try {
@@ -54,11 +53,10 @@ export default function Login() {
                 const data = await res.json();
                 window.location.href = `/auth/callback?token=${data.access_token}`;
               } else {
-                const errText = await res.text();
-                setDebugError(`Erreur ${res.status}: ${errText}`);
+                alert("Erreur de connexion");
               }
-            } catch (err: any) {
-              setDebugError(`Erreur Fetch: ${err.message || err}`);
+            } catch (err) {
+              alert("Erreur réseau");
             }
           }}
           className="space-y-3"

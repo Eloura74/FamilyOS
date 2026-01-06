@@ -14,7 +14,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 5
         },
         {
             "name": "Capteur Salon",
@@ -25,7 +26,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 11
         },
         {
             "name": "bureau priv\u00e9 porte",
@@ -36,7 +38,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 28
         },
         {
             "name": "Ambilight",
@@ -47,7 +50,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 2
         },
         {
             "name": "Passerelle ZigBee",
@@ -58,7 +62,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 21
         },
         {
             "name": "Camera_ext_1",
@@ -69,7 +74,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 6
         },
         {
             "name": "Cam\u00e9ra Salon",
@@ -80,7 +86,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 7
         },
         {
             "name": "Capteur Etage",
@@ -91,7 +98,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 9
         },
         {
             "name": "Canap\u00e9",
@@ -104,7 +112,8 @@
             "briefing_ids": [
                 "cfafb089-6523-4e0b-a956-5d7c123a1c08"
             ],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 0
         },
         {
             "name": "Porte garage",
@@ -115,7 +124,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 23
         },
         {
             "name": "portail",
@@ -126,7 +136,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 34
         },
         {
             "name": "\u00e9clairage isaac",
@@ -137,7 +148,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 39
         },
         {
             "name": "Porte Chambre parentale",
@@ -148,7 +160,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 22
         },
         {
             "name": "\u00e9clairage Cible",
@@ -159,7 +172,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 38
         },
         {
             "name": "rideau ext\u00e9rieur",
@@ -170,7 +184,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 35
         },
         {
             "name": "guirlande ext\u00e9rieur",
@@ -181,7 +196,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 30
         },
         {
             "name": "sapin",
@@ -192,7 +208,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 36
         },
         {
             "name": "Sonnette ext\u00e9rieur",
@@ -203,7 +220,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 24
         },
         {
             "name": "Led Switchwire",
@@ -214,7 +232,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 19
         },
         {
             "name": "Interrupteur Bureau",
@@ -225,7 +244,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 17
         },
         {
             "name": "Capteur Garage",
@@ -236,7 +256,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 10
         },
         {
             "name": "VzBot",
@@ -247,7 +268,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 27
         },
         {
             "name": "Escalier",
@@ -258,7 +280,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 16
         },
         {
             "name": "chemin\u00e9e",
@@ -269,7 +292,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 29
         },
         {
             "name": "Interrupteur terrasse",
@@ -280,7 +304,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 18
         },
         {
             "name": "Spot bureau \u00e9cran",
@@ -291,7 +316,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 25
         },
         {
             "name": "piscine",
@@ -302,7 +328,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 32
         },
         {
             "name": "temp\u00e9rature ext\u00e9rieure",
@@ -313,7 +340,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 37
         },
         {
             "name": "led bureau 3",
@@ -324,7 +352,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 31
         },
         {
             "name": "\u00e9clairage terrasse",
@@ -335,7 +364,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 40
         },
         {
             "name": "Capteur chambre Aaron",
@@ -346,7 +376,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 12
         },
         {
             "name": "Switchwire",
@@ -357,7 +388,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 26
         },
         {
             "name": "Cuisine",
@@ -368,7 +400,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 14
         },
         {
             "name": "Cuisine",
@@ -379,7 +412,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 15
         },
         {
             "name": "piscine",
@@ -390,7 +424,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 33
         },
         {
             "name": "Capteur Bureau",
@@ -401,7 +436,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 8
         },
         {
             "name": "360Camera",
@@ -412,7 +448,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 1
         },
         {
             "name": "Bureau LED1",
@@ -423,7 +460,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 4
         },
         {
             "name": "Led bureau",
@@ -434,7 +472,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 20
         },
         {
             "name": "Clim Salon",
@@ -445,7 +484,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 13
         },
         {
             "name": "BRT-RGB-vdevo",
@@ -456,7 +496,8 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "order": 3
         }
     ]
 }

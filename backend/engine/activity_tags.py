@@ -60,9 +60,11 @@ RAW_RULES = {
     "santé": {
         "médecin|docteur": ["Carte Vitale", "Carte Mutuelle", "Moyen de paiement", "Derniers résultats"],
         "pharmacie": ["Carte Vitale", "Mutuelle", "Ordonnance originale"],
-        "pédiatre": ["Carnet de santé", "Carte Vitale", "Couche propre", "Doudou pour rassurer"],
+        "pédiatre": ["Carnet de santé", "Carte Vitale", "Couche propre", "Doudou"],
         "hôpital|urgences": _BASE_ADMIN + ["Chargeur téléphone", "Bouteille d'eau", "Monnaie", "Liste médicaments actuels"],
-        "ophtalmo": ["Lunettes actuelles", "Lentilles (boîtier)", "Carte Vitale", "Ancienne ordonnance"]
+        "ophtalmo": ["Lunettes actuelles", "Lentilles (boîtier)", "Carte Vitale", "Ancienne ordonnance"],
+        "kinésithérapie|kiné": ["Carte Vitale", "Mutuelle", "Ordonnance originale"],
+        "dentiste": ["Carte Vitale", "Mutuelle", "Ordonnance originale"]
     },
 
     # 6. VOYAGE & LOISIRS

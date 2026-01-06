@@ -21,6 +21,9 @@ REM 3. Lancement du serveur Frontend
 echo [3/4] Lancement du serveur Frontend...
 echo L'application va demarrer. Gardez cette fenetre ouverte !
 echo.
+echo.
+echo [2.5/4] Liberation du port 5173...
+FOR /F "tokens=5" %%a IN ('netstat -aon ^| find ":5173" ^| find "LISTENING"') DO taskkill /f /pid %%a >nul 2>&1
 cd frontend
 call npm run dev
 if %errorlevel% neq 0 (

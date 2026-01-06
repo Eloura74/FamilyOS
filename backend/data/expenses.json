@@ -21,5 +21,17 @@
       "CARTE POSTALE",
       "STYLO BILLE"
     ]
+  },
+  {
+    "id": "777c28bd-fb6e-4daa-943c-c46d75064bf3",
+    "date": "2026-01-05",
+    "amount": 4.8,
+    "merchant": "Boulangerie des Vignes",
+    "category": "Alimentation",
+    "items": [
+      "PAIN CAMPAGNE",
+      "BAGUETTE TRADITION",
+      "CROISSANT BEURRE"
+    ]
   }
 ]

@@ -55,3 +55,43 @@ pwa-camera-modal-instance {
   --text-color: #f8fafc !important;
   z-index: 9999 !important;
 }
+
+/* Safe Area Utilities for Mobile */
+/* Safe Area Utilities for Mobile */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+/* Fallback Android si env() ne marche pas (souvent 0 sur certaines webviews sans plugin statusbar) */
+body.platform-android .pt-safe {
+  padding-top: max(env(safe-area-inset-top), 35px);
+}
+
+/* Fallback global pour mobile (si detection platforme echoue) */
+@media (max-width: 640px) {
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top), 35px);
+  }
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+  }
+  .min-h-safe {
+    min-height: calc(100vh - 35px - 20px);
+  }
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+/* Fallback Android pour la barre de nav */
+body.platform-android .pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 20px);
+}
+
+.min-h-safe {
+  min-height: calc(
+    100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  );
+}
+body.platform-android .min-h-safe {
+  min-height: calc(100vh - 35px - 20px);
+}

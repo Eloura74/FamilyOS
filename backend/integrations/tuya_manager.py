@@ -110,6 +110,9 @@ class TuyaManager:
                 device_info["wakeup_routine"] = existing.get("wakeup_routine", False)
                 device_info["briefing_ids"] = existing.get("briefing_ids", [])
                 device_info["wakeup_action"] = existing.get("wakeup_action", "ON")
+                device_info["order"] = existing.get("order", 999) # Preserve order
+            else:
+                device_info["order"] = 999 # Default order for new devices
             
             processed_devices.append(device_info)
 
@@ -118,7 +121,8 @@ class TuyaManager:
         return self.devices
 
     def get_devices(self):
-        return self.devices
+        # Sort by order, then by name
+        return sorted(self.devices, key=lambda x: (x.get("order", 999), x.get("name", "")))
 
     def update_device_settings(self, device_id: str, settings: Dict[str, Any]):
         """Update settings like briefing_ids for a specific device."""
@@ -128,6 +132,16 @@ class TuyaManager:
                 self._save_data()
                 return d
         return None
+
+    def update_device_order(self, ordered_ids: List[str]):
+        """Update the order of devices based on a list of IDs."""
+        for index, device_id in enumerate(ordered_ids):
+            for device in self.devices:
+                if device["id"] == device_id:
+                    device["order"] = index
+                    break
+        self._save_data()
+        return True
 
     def send_command(self, device_id: str, command: str, value: Any = None):
         """Send a command to a device. Tries Local first, then Cloud."""
