@@ -26,42 +26,20 @@ import NotesCard from "./dashboard/NotesCard";
 import SortableWidget from "./dashboard/SortableWidget";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 
-interface WeatherData {
-  current: {
-    temperature_2m: number;
-    weather_code: number;
-    wind_speed_10m: number;
-  };
-  daily?: {
-    time: string[];
-    weather_code: number[];
-    temperature_2m_max: number[];
-    temperature_2m_min: number[];
-    precipitation_probability_max: number[];
-  };
-  recommendation?: {
-    summary: string;
-    items: string[];
-    icon: string;
-  };
-}
-
-interface CalendarEvent {
-  title: string;
-  start: string;
-  end: string | null;
-  all_day: boolean;
-  location: string;
-  tags: string[];
-  required_items: string[];
-}
+import type {
+  WeatherData,
+  CalendarEvent,
+  Meal,
+  BudgetStatistics,
+  Email,
+} from "../types";
 
 export default function Dashboard() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [meals, setMeals] = useState<Record<string, any>>({});
-  const [budgetStats, setBudgetStats] = useState<any>(null);
-  const [emails, setEmails] = useState<any[]>([]);
+  const [meals, setMeals] = useState<Record<string, Meal>>({});
+  const [budgetStats, setBudgetStats] = useState<BudgetStatistics | null>(null);
+  const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -613,7 +591,7 @@ export default function Dashboard() {
           </div>
           <div className="flex gap-3">
             <button
-              onClick={playBriefing}
+              onClick={() => playBriefing()}
               disabled={briefingPlaying}
               className={`p-3 rounded-full border transition-all duration-300 shadow-lg ${
                 briefingPlaying

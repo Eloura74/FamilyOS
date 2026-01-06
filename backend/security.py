@@ -5,7 +5,13 @@ from passlib.context import CryptContext
 import os
 
 # Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key_change_me_in_prod")
+from dotenv import load_dotenv
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    print("WARNING: SECRET_KEY not found in .env, using unsafe default!")
+    SECRET_KEY = "super_secret_key_change_me_in_prod"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 1 semaine
 

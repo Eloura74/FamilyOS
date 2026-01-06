@@ -17,9 +17,14 @@ from backend.integrations.tuya_manager import TuyaManager
 app = FastAPI()
 
 # Configuration CORS
+from dotenv import load_dotenv
+load_dotenv()
+
+origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En prod, restreindre à l'URL du frontend
+    allow_origins=origins,  # En prod, restreindre à l'URL du frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -19,64 +19,14 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-interface BriefingConfig {
-  id: string;
-  title: string;
-  time: string;
-  enabled: boolean;
-  content: {
-    weather: boolean;
-    calendar: boolean;
-    meals: boolean;
-    emails: boolean;
-    budget: boolean;
-    traffic: boolean;
-    notes: boolean;
-  };
-}
-
-interface Settings {
-  nickname: string;
-  briefing_time: string; // Deprecated but kept for compatibility
-  briefings?: BriefingConfig[];
-  budget_limit: number;
-  auto_play_briefing: boolean;
-  home_address?: string;
-  work_address?: string;
-  work_arrival_time?: string;
-}
-
-interface Expense {
-  id: string;
-  date: string;
-  amount: number;
-  merchant: string;
-  category: string;
-}
-
-interface TuyaCredentials {
-  api_key: string;
-  api_secret: string;
-  region: string;
-}
-
-interface ActionConfig {
-  type: "ON" | "PROGRESSIVE" | "VALUE";
-  duration?: number; // minutes
-  target?: number; // 0-1000
-}
-
-interface TuyaDevice {
-  id: string;
-  name: string;
-  category: string;
-  product_name: string;
-  online: boolean;
-  wakeup_routine: boolean; // Deprecated
-  briefing_ids: string[];
-  briefing_actions?: Record<string, ActionConfig>; // New
-  wakeup_action: string;
-}
+import type {
+  BriefingConfig,
+  Settings as SettingsType,
+  Expense,
+  TuyaCredentials,
+  ActionConfig,
+  TuyaDevice,
+} from "../types";
 
 // Sortable Device Item Component
 function SortableDeviceItem({
@@ -305,7 +255,7 @@ function SortableDeviceItem({
 }
 
 export default function Settings() {
-  const [settings, setSettings] = useState<Settings>({
+  const [settings, setSettings] = useState<SettingsType>({
     nickname: "",
     briefing_time: "07:00",
     budget_limit: 1000,
