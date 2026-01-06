@@ -678,6 +678,9 @@ export default function Dashboard() {
                     <button
                       onClick={async () => {
                         try {
+                          // Masquer la modale pour éviter les conflits de z-index avec la caméra
+                          setShowUploadModal(false);
+
                           const image = await Camera.getPhoto({
                             quality: 90,
                             allowEditing: false,
@@ -701,11 +704,18 @@ export default function Dashboard() {
                             const event = {
                               target: { files: [file] },
                             } as unknown as React.ChangeEvent<HTMLInputElement>;
+
+                            // Réafficher la modale avant de traiter (ou laisser le traitement le faire)
+                            setShowUploadModal(true);
                             handleFileUpload(event);
+                          } else {
+                            // Si pas d'image (ex: fermeture sans photo), on réaffiche la modale
+                            setShowUploadModal(true);
                           }
                         } catch (e) {
                           console.log("Camera cancelled or error", e);
-                          alert("Erreur Caméra: " + JSON.stringify(e));
+                          // En cas d'erreur ou d'annulation, on réaffiche la modale
+                          setShowUploadModal(true);
                         }
                       }}
                       className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"

@@ -49,7 +49,8 @@ body > pwa-action-sheet {
   z-index: 9999 !important;
 }
 
-body > pwa-camera-modal {
+body > pwa-camera-modal,
+pwa-camera-modal-instance {
   --background: #0f172a !important;
   --text-color: #f8fafc !important;
   z-index: 9999 !important;
