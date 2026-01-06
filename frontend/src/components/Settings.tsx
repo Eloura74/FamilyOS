@@ -19,9 +19,26 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+interface BriefingConfig {
+  id: string;
+  title: string;
+  time: string;
+  enabled: bool;
+  content: {
+    weather: boolean;
+    calendar: boolean;
+    meals: boolean;
+    emails: boolean;
+    budget: boolean;
+    traffic: boolean;
+    notes: boolean;
+  };
+}
+
 interface Settings {
   nickname: string;
-  briefing_time: string;
+  briefing_time: string; // Deprecated but kept for compatibility
+  briefings?: BriefingConfig[];
   budget_limit: number;
   auto_play_briefing: boolean;
   home_address?: string;
@@ -49,18 +66,23 @@ interface TuyaDevice {
   category: string;
   product_name: string;
   online: boolean;
-  wakeup_routine: boolean;
+  wakeup_routine: boolean; // Deprecated
+  briefing_ids: string[]; // New
   wakeup_action: string;
 }
 
 // Sortable Device Item Component
 function SortableDeviceItem({
   device,
-  handleToggleWakeup,
+  briefings,
+  handleToggleBriefing,
+  handleClearBriefings,
   handleTestDevice,
 }: {
   device: TuyaDevice;
-  handleToggleWakeup: (device: TuyaDevice) => void;
+  briefings: BriefingConfig[];
+  handleToggleBriefing: (device: TuyaDevice, briefingId: string) => void;
+  handleClearBriefings: (device: TuyaDevice) => void;
   handleTestDevice: (deviceId: string, action: string) => void;
 }) {
   const {
@@ -72,20 +94,23 @@ function SortableDeviceItem({
     isDragging,
   } = useSortable({ id: device.id });
 
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showBriefingSelect, setShowBriefingSelect] = useState(false);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 50 : "auto",
+    zIndex: isDragging || showBriefingSelect ? 50 : "auto",
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const activeBriefingsCount = device.briefing_ids?.length || 0;
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden transition-all"
+      className="bg-slate-950 rounded-xl border border-slate-800 transition-all relative"
     >
       {/* Header Compact (Always visible) */}
       <div className="p-3 flex items-center justify-between gap-3">
@@ -116,27 +141,83 @@ function SortableDeviceItem({
           </div>
         </div>
 
-        {/* Quick Action (Wakeup Toggle) */}
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider hidden sm:block">
-            Réveil
-          </span>
+        {/* Quick Action (Briefing Link) */}
+        <div className="relative">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleToggleWakeup(device);
+              setShowBriefingSelect(!showBriefingSelect);
             }}
-            className={`w-8 h-4 rounded-full transition-colors relative shrink-0 ${
-              device.wakeup_routine ? "bg-green-500" : "bg-slate-700"
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors border ${
+              activeBriefingsCount > 0
+                ? "bg-blue-600/20 border-blue-500/50 text-blue-400"
+                : "bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-600"
             }`}
-            title="Activer au réveil"
+            title="Lier aux briefings"
           >
-            <div
-              className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${
-                device.wakeup_routine ? "left-4.5" : "left-0.5"
-              }`}
-            />
+            <span className="text-xs font-bold uppercase tracking-wider">
+              {activeBriefingsCount > 0
+                ? `${activeBriefingsCount} Briefing${
+                    activeBriefingsCount > 1 ? "s" : ""
+                  }`
+                : "Aucun"}
+            </span>
+            <span className="text-xs">🔗</span>
           </button>
+
+          {/* Briefing Selection Popover */}
+          {showBriefingSelect && (
+            <div className="absolute right-0 top-full mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 p-2 animate-in fade-in zoom-in-95 duration-100">
+              <div className="text-xs font-bold text-slate-400 px-2 py-1 mb-1 uppercase tracking-wider">
+                Activer pour :
+              </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClearBriefings(device);
+                  setShowBriefingSelect(false);
+                }}
+                className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors mb-1 ${
+                  activeBriefingsCount === 0
+                    ? "bg-slate-800 text-slate-300"
+                    : "hover:bg-slate-800 text-slate-400"
+                }`}
+              >
+                <span>Aucun</span>
+                {activeBriefingsCount === 0 && <span>✓</span>}
+              </button>
+
+              {briefings.length === 0 ? (
+                <div className="text-xs text-slate-500 px-2 py-1 italic">
+                  Aucun briefing créé.
+                </div>
+              ) : (
+                <div className="space-y-1 border-t border-slate-800 pt-1">
+                  {briefings.map((briefing) => {
+                    const isActive = device.briefing_ids?.includes(briefing.id);
+                    return (
+                      <button
+                        key={briefing.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleBriefing(device, briefing.id);
+                        }}
+                        className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
+                          isActive
+                            ? "bg-blue-600/20 text-blue-300"
+                            : "hover:bg-slate-800 text-slate-400"
+                        }`}
+                      >
+                        <span className="truncate">{briefing.title}</span>
+                        {isActive && <span>✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Expand/Collapse Chevron */}
@@ -196,6 +277,7 @@ export default function Settings() {
     briefing_time: "07:00",
     budget_limit: 1000,
     auto_play_briefing: false,
+    briefings: [],
   });
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
@@ -211,6 +293,27 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Briefing Modal State
+  const [showBriefingModal, setShowBriefingModal] = useState(false);
+  const [editingBriefing, setEditingBriefing] = useState<BriefingConfig | null>(
+    null
+  );
+  const [briefingForm, setBriefingForm] = useState<BriefingConfig>({
+    id: "",
+    title: "",
+    time: "07:00",
+    enabled: true,
+    content: {
+      weather: true,
+      calendar: true,
+      meals: true,
+      emails: true,
+      budget: true,
+      traffic: true,
+      notes: true,
+    },
+  });
 
   // UI State
   const [expandedSection, setExpandedSection] = useState<string | null>(
@@ -253,6 +356,11 @@ export default function Settings() {
 
       const settingsData = await settingsRes.json();
       const expensesData = await expensesRes.json();
+
+      // Ensure briefings array exists
+      if (!settingsData.briefings) {
+        settingsData.briefings = [];
+      }
 
       setSettings(settingsData);
       setExpenses(Array.isArray(expensesData) ? expensesData : []);
@@ -308,10 +416,6 @@ export default function Settings() {
         body: JSON.stringify(settings),
       });
 
-      // Save device order if needed (currently local only for this session unless we add an endpoint)
-      // For now, we just save settings.
-      // Ideally, we should save the device order to the backend too.
-
       alert("Paramètres sauvegardés !");
     } catch (error) {
       console.error("Erreur sauvegarde:", error);
@@ -344,12 +448,23 @@ export default function Settings() {
     }
   };
 
-  const handleToggleWakeup = async (device: TuyaDevice) => {
-    const newStatus = !device.wakeup_routine;
+  const handleToggleBriefing = async (
+    device: TuyaDevice,
+    briefingId: string
+  ) => {
+    const currentIds = device.briefing_ids || [];
+    let newIds: string[];
+
+    if (currentIds.includes(briefingId)) {
+      newIds = currentIds.filter((id) => id !== briefingId);
+    } else {
+      newIds = [...currentIds, briefingId];
+    }
+
     // Optimistic update
     setTuyaDevices(
       tuyaDevices.map((d) =>
-        d.id === device.id ? { ...d, wakeup_routine: newStatus } : d
+        d.id === device.id ? { ...d, briefing_ids: newIds } : d
       )
     );
 
@@ -359,7 +474,7 @@ export default function Settings() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wakeup_routine: newStatus }),
+          body: JSON.stringify({ briefing_ids: newIds }),
         }
       );
     } catch (error) {
@@ -367,7 +482,37 @@ export default function Settings() {
       // Rollback
       setTuyaDevices(
         tuyaDevices.map((d) =>
-          d.id === device.id ? { ...d, wakeup_routine: !newStatus } : d
+          d.id === device.id ? { ...d, briefing_ids: currentIds } : d
+        )
+      );
+    }
+  };
+
+  const handleClearBriefings = async (device: TuyaDevice) => {
+    const currentIds = device.briefing_ids || [];
+
+    // Optimistic update
+    setTuyaDevices(
+      tuyaDevices.map((d) =>
+        d.id === device.id ? { ...d, briefing_ids: [] } : d
+      )
+    );
+
+    try {
+      await fetch(
+        `${import.meta.env.VITE_API_URL}/api/tuya/device/${device.id}/settings`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ briefing_ids: [] }),
+        }
+      );
+    } catch (error) {
+      console.error("Erreur update device:", error);
+      // Rollback
+      setTuyaDevices(
+        tuyaDevices.map((d) =>
+          d.id === device.id ? { ...d, briefing_ids: currentIds } : d
         )
       );
     }
@@ -429,6 +574,60 @@ export default function Settings() {
         return arrayMove(items, oldIndex, newIndex);
       });
     }
+  };
+
+  // Briefing Management
+  const openBriefingModal = (briefing?: BriefingConfig) => {
+    if (briefing) {
+      setEditingBriefing(briefing);
+      setBriefingForm(briefing);
+    } else {
+      setEditingBriefing(null);
+      setBriefingForm({
+        id: crypto.randomUUID(),
+        title: "",
+        time: "07:00",
+        enabled: true,
+        content: {
+          weather: true,
+          calendar: true,
+          meals: true,
+          emails: true,
+          budget: true,
+          traffic: true,
+          notes: true,
+        },
+      });
+    }
+    setShowBriefingModal(true);
+  };
+
+  const saveBriefing = () => {
+    if (!briefingForm.title) {
+      alert("Veuillez donner un titre au briefing.");
+      return;
+    }
+
+    let updatedBriefings = [...(settings.briefings || [])];
+
+    if (editingBriefing) {
+      updatedBriefings = updatedBriefings.map((b) =>
+        b.id === editingBriefing.id ? briefingForm : b
+      );
+    } else {
+      updatedBriefings.push(briefingForm);
+    }
+
+    setSettings({ ...settings, briefings: updatedBriefings });
+    setShowBriefingModal(false);
+  };
+
+  const deleteBriefing = (id: string) => {
+    if (!confirm("Supprimer ce briefing ?")) return;
+    const updatedBriefings = (settings.briefings || []).filter(
+      (b) => b.id !== id
+    );
+    setSettings({ ...settings, briefings: updatedBriefings });
   };
 
   if (loading) {
@@ -640,8 +839,8 @@ export default function Settings() {
                 Appareils détectés ({tuyaDevices.length})
               </h3>
               <p className="text-xs text-slate-500">
-                Activez l'option "RÉVEIL" pour que l'appareil s'allume
-                automatiquement lors de votre briefing matinal.
+                Liez vos appareils aux briefings (Matin, Soir...) pour qu'ils
+                s'activent automatiquement.
               </p>
             </div>
             {tuyaDevices.length === 0 ? (
@@ -663,7 +862,9 @@ export default function Settings() {
                       <SortableDeviceItem
                         key={device.id}
                         device={device}
-                        handleToggleWakeup={handleToggleWakeup}
+                        briefings={settings.briefings || []}
+                        handleToggleBriefing={handleToggleBriefing}
+                        handleClearBriefings={handleClearBriefings}
                         handleTestDevice={handleTestDevice}
                       />
                     ))}
@@ -682,38 +883,83 @@ export default function Settings() {
           colorFrom="from-purple-600"
           colorTo="to-fuchsia-600"
         >
-          <div>
-            <label className="block text-sm text-slate-400 mb-1">
-              Heure du briefing auto
-            </label>
-            <input
-              type="time"
-              value={settings.briefing_time}
-              onChange={(e) =>
-                setSettings({ ...settings, briefing_time: e.target.value })
-              }
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-300">Lecture automatique</span>
-            <button
-              onClick={() =>
-                setSettings({
-                  ...settings,
-                  auto_play_briefing: !settings.auto_play_briefing,
-                })
-              }
-              className={`w-12 h-6 rounded-full transition-colors relative ${
-                settings.auto_play_briefing ? "bg-blue-600" : "bg-slate-700"
-              }`}
-            >
-              <div
-                className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                  settings.auto_play_briefing ? "left-7" : "left-1"
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-300">
+                Lecture automatique
+              </span>
+              <button
+                onClick={() =>
+                  setSettings({
+                    ...settings,
+                    auto_play_briefing: !settings.auto_play_briefing,
+                  })
+                }
+                className={`w-12 h-6 rounded-full transition-colors relative ${
+                  settings.auto_play_briefing ? "bg-blue-600" : "bg-slate-700"
                 }`}
-              ></div>
-            </button>
+              >
+                <div
+                  className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                    settings.auto_play_briefing ? "left-7" : "left-1"
+                  }`}
+                ></div>
+              </button>
+            </div>
+
+            <div className="h-px bg-slate-800" />
+
+            {/* Briefing List */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+                  Mes Briefings
+                </h3>
+                <button
+                  onClick={() => openBriefingModal()}
+                  className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded-lg transition-colors"
+                >
+                  + Nouveau
+                </button>
+              </div>
+
+              {(!settings.briefings || settings.briefings.length === 0) && (
+                <p className="text-sm text-slate-500 italic">
+                  Aucun briefing configuré.
+                </p>
+              )}
+
+              {settings.briefings?.map((briefing) => (
+                <div
+                  key={briefing.id}
+                  className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-slate-800 p-2 rounded-lg text-lg">
+                      ⏰
+                    </div>
+                    <div>
+                      <p className="font-bold text-white">{briefing.title}</p>
+                      <p className="text-xs text-slate-500">{briefing.time}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openBriefingModal(briefing)}
+                      className="p-2 text-slate-400 hover:text-white transition-colors"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => deleteBriefing(briefing.id)}
+                      className="p-2 text-slate-400 hover:text-red-400 transition-colors"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </SettingsSection>
 
@@ -887,6 +1133,106 @@ export default function Settings() {
           )}
         </button>
       </div>
+
+      {/* Briefing Modal */}
+      {showBriefingModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold text-white mb-4">
+              {editingBriefing ? "Modifier le briefing" : "Nouveau briefing"}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">
+                  Titre (ex: Matin, Soir)
+                </label>
+                <input
+                  type="text"
+                  value={briefingForm.title}
+                  onChange={(e) =>
+                    setBriefingForm({ ...briefingForm, title: e.target.value })
+                  }
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+                  placeholder="Mon Briefing"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">
+                  Heure de déclenchement
+                </label>
+                <input
+                  type="time"
+                  value={briefingForm.time}
+                  onChange={(e) =>
+                    setBriefingForm({ ...briefingForm, time: e.target.value })
+                  }
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm text-slate-400 mb-1">
+                  Contenu du briefing
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: "weather", label: "Météo", icon: "🌤️" },
+                    { key: "calendar", label: "Agenda", icon: "📅" },
+                    { key: "meals", label: "Repas", icon: "🍽️" },
+                    { key: "emails", label: "Emails", icon: "📧" },
+                    { key: "budget", label: "Budget", icon: "💰" },
+                    { key: "traffic", label: "Trafic", icon: "🚗" },
+                    { key: "notes", label: "Notes", icon: "📝" },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      onClick={() =>
+                        setBriefingForm({
+                          ...briefingForm,
+                          content: {
+                            ...briefingForm.content,
+                            [item.key]:
+                              !briefingForm.content[
+                                item.key as keyof typeof briefingForm.content
+                              ],
+                          },
+                        })
+                      }
+                      className={`p-3 rounded-xl border text-sm font-medium flex items-center gap-2 transition-all ${
+                        briefingForm.content[
+                          item.key as keyof typeof briefingForm.content
+                        ]
+                          ? "bg-blue-600/20 border-blue-500 text-blue-200"
+                          : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-600"
+                      }`}
+                    >
+                      <span>{item.icon}</span>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowBriefingModal(false)}
+                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={saveBriefing}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

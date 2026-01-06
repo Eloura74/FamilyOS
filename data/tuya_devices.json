@@ -13,7 +13,8 @@
             "product_name": "ZC-TD WiFi gu10\u706f\u6ce1 V2.0",
             "online": false,
             "wakeup_routine": false,
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "briefing_ids": []
         },
         {
             "name": "bureau priv\u00e9 porte",
@@ -53,7 +54,10 @@
             "product_name": "E27 RGB CCT",
             "online": false,
             "wakeup_routine": false,
-            "wakeup_action": "ON"
+            "wakeup_action": "ON",
+            "briefing_ids": [
+                "cfafb089-6523-4e0b-a956-5d7c123a1c08"
+            ]
         },
         {
             "name": "portail",

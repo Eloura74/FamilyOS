@@ -2,9 +2,56 @@
   "nickname": "quentin",
   "briefing_time": "00:18",
   "budget_limit": 900,
-  "auto_play_briefing": false,
+  "auto_play_briefing": true,
   "home_address": "25 Ronde des Bolles, 13800 Istres, France",
   "work_address": "8 Rte du Camp d'Aviation, 13800 Istres, France",
   "work_arrival_time": "08:00",
-  "google_maps_key": "AIzaSyC6VvX5GZYhUdoOE8GMHt3dHSD6xKVD6WM"
+  "google_maps_key": "AIzaSyC6VvX5GZYhUdoOE8GMHt3dHSD6xKVD6WM",
+  "briefings": [
+    {
+      "id": "9d80e17f-65d5-4653-8789-c269c0607d18",
+      "title": "reveil",
+      "time": "07:00",
+      "enabled": true,
+      "content": {
+        "weather": true,
+        "calendar": true,
+        "meals": true,
+        "emails": true,
+        "budget": true,
+        "traffic": true,
+        "notes": true
+      }
+    },
+    {
+      "id": "014273d0-a74d-4a85-b623-6e02a79a5c9f",
+      "title": "midi",
+      "time": "12:00",
+      "enabled": true,
+      "content": {
+        "weather": true,
+        "calendar": true,
+        "meals": true,
+        "emails": false,
+        "budget": false,
+        "traffic": false,
+        "notes": true
+      }
+    },
+    {
+      "id": "cfafb089-6523-4e0b-a956-5d7c123a1c08",
+      "title": "test",
+      "time": "10:19",
+      "enabled": true,
+      "content": {
+        "weather": true,
+        "calendar": true,
+        "meals": true,
+        "emails": true,
+        "budget": true,
+        "traffic": true,
+        "notes": true
+      }
+    }
+  ]
 }

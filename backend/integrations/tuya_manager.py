@@ -82,14 +82,17 @@ class TuyaManager:
                 "category": d.get("category"), # e.g., 'dj' (light), 'cz' (socket)
                 "product_name": d.get("product_name"),
                 "online": d.get("online", False),
-                "wakeup_routine": False, # Default setting
-                "wakeup_action": "ON" # Default action
+                "online": d.get("online", False),
+                "wakeup_routine": False, # Deprecated
+                "briefing_ids": [], # New: List of briefing IDs this device is linked to
+                "wakeup_action": "ON"
             }
             
             # Preserve existing settings if device already exists
             existing = next((x for x in self.devices if x["id"] == device_info["id"]), None)
             if existing:
                 device_info["wakeup_routine"] = existing.get("wakeup_routine", False)
+                device_info["briefing_ids"] = existing.get("briefing_ids", [])
                 device_info["wakeup_action"] = existing.get("wakeup_action", "ON")
             
             processed_devices.append(device_info)
@@ -102,7 +105,7 @@ class TuyaManager:
         return self.devices
 
     def update_device_settings(self, device_id: str, settings: Dict[str, Any]):
-        """Update settings like wakeup_routine for a specific device."""
+        """Update settings like briefing_ids for a specific device."""
         for d in self.devices:
             if d["id"] == device_id:
                 d.update(settings)

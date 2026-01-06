@@ -5,11 +5,27 @@ from backend.repositories.settings import SettingsRepository
 router = APIRouter()
 settings_repo = SettingsRepository()
 
+class BriefingConfig(BaseModel):
+    id: str
+    title: str
+    time: str
+    enabled: bool
+    content: dict[str, bool] = {
+        "weather": True,
+        "calendar": True,
+        "meals": True,
+        "emails": True,
+        "budget": True,
+        "traffic": True,
+        "notes": True
+    }
+
 class SettingsUpdate(BaseModel):
     nickname: str | None = None
-    briefing_time: str | None = None
+    briefing_time: str | None = None # Deprecated but kept for backward compat if needed
+    briefings: list[BriefingConfig] | None = None
     budget_limit: int | None = None
-    auto_play_briefing: bool | None = None
+    auto_play_briefing: bool | None = None # Global toggle or per briefing? Let's keep global for now or move to briefing
     home_address: str | None = None
     work_address: str | None = None
     work_arrival_time: str | None = None
