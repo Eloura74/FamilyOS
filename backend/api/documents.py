@@ -82,17 +82,36 @@ async def upload_document(file: UploadFile = File(...)):
         # 4. ROUTAGE VERS AGENDA (Events/RDV) - Fallback par défaut si date détectée
         elif routing_action == "add_event" or (analysis_result.get("date") and doc_type not in ["Facture", "Ticket"]):
             try:
+                # Construction de la date de début (ISO pour datetime-local)
+                start_date = analysis_result.get("date")
+                start_time = analysis_result.get("time")
+                
+                if start_date and start_time:
+                    start_iso = f"{start_date}T{start_time}"
+                elif start_date:
+                    start_iso = f"{start_date}T09:00" # Heure par défaut si non précisée
+                else:
+                    start_iso = datetime.now().strftime("%Y-%m-%dT%H:%M")
+
                 description = analysis_result.get("summary", "")
+                
+                # Actions à faire (Texte simple dans la description)
                 action_items = analysis_result.get("action_items", [])
                 if action_items:
-                    items_str = ", ".join(action_items)
+                    actions_str = "\n- ".join(action_items)
+                    description += f"\n\nACTIONS :\n- {actions_str}"
+                
+                # Matériel à apporter (Tag spécial [ITEMS] pour le Sac à préparer)
+                required_equipment = analysis_result.get("required_equipment", [])
+                if required_equipment:
+                    items_str = ", ".join(required_equipment)
                     description += f"\n\n[ITEMS]: {items_str}"
 
                 # On prépare les données mais on ne crée PAS l'événement automatiquement
                 # On laisse le frontend demander confirmation à l'utilisateur
                 event_data = {
                     "summary": analysis_result.get("title", "Document scanné"),
-                    "start": analysis_result["date"],
+                    "start": start_iso,
                     "description": description
                 }
                 

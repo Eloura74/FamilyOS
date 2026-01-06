@@ -52,6 +52,8 @@ class CalendarService:
             'description': event_data.get('description', ''),
         }
 
+        print(f"DEBUG: create_event called with {event_data}")
+        
         if is_all_day:
             event['start'] = {'date': event_data['start']}
             # Pour Google Calendar, la fin d'un événement all-day est le jour suivant
@@ -64,9 +66,30 @@ class CalendarService:
                  event['end'] = {'date': end_date.strftime("%Y-%m-%d")}
         else:
             # Format DateTime
-            start_dt = datetime.fromisoformat(event_data['start'].replace('Z', '+00:00'))
+            # Gestion robuste du format ISO (avec ou sans secondes, avec ou sans Z)
+            start_str = event_data['start'].replace('Z', '+00:00')
+            print(f"DEBUG: start_str for parsing: {start_str}")
+            try:
+                start_dt = datetime.fromisoformat(start_str)
+            except ValueError:
+                # Fallback pour le format YYYY-MM-DDTHH:MM (input datetime-local)
+                if len(start_str) == 16: # YYYY-MM-DDTHH:MM
+                    start_dt = datetime.strptime(start_str, "%Y-%m-%dT%H:%M")
+                else:
+                    print(f"ERROR: Invalid date format: {start_str}")
+                    raise ValueError(f"Format de date invalide: {start_str}")
+            
+            print(f"DEBUG: Parsed start_dt: {start_dt}")
+
             if 'end' in event_data and event_data['end']:
-                 end_dt = datetime.fromisoformat(event_data['end'].replace('Z', '+00:00'))
+                 end_str = event_data['end'].replace('Z', '+00:00')
+                 try:
+                     end_dt = datetime.fromisoformat(end_str)
+                 except ValueError:
+                     if len(end_str) == 16:
+                         end_dt = datetime.strptime(end_str, "%Y-%m-%dT%H:%M")
+                     else:
+                         end_dt = start_dt + timedelta(hours=1)
             else:
                  end_dt = start_dt + timedelta(hours=1)
             
@@ -78,9 +101,15 @@ class CalendarService:
                 'dateTime': end_dt.isoformat(),
                 'timeZone': 'Europe/Paris',
             }
-
-        created_event = service.events().insert(calendarId='primary', body=event).execute()
-        return created_event
+            
+        print(f"DEBUG: Sending event to Google: {event}")
+        try:
+            created_event = service.events().insert(calendarId='primary', body=event).execute()
+            print("DEBUG: Event created successfully")
+            return created_event
+        except Exception as e:
+            print(f"ERROR Google API: {e}")
+            raise e
 
     async def fetch_events(self) -> List[Dict[str, Any]]:
         """

@@ -71,9 +71,11 @@ async def analyze_image_with_gemini(image_path: str) -> Dict[str, Any]:
             "routing_action": "add_note | add_expense | add_event | none",
             
             "title": "Titre principal ou résumé court",
-            "date": "Date de l'événement ou du document (YYYY-MM-DD) ou null",
-            "summary": "Résumé en 1 ou 2 phrases.",
-            "action_items": ["Liste", "des choses", "à faire"],
+            "date": "Date de l'événement (YYYY-MM-DD) ou null",
+            "time": "Heure de l'événement (HH:MM) ou null",
+            "summary": "Résumé SANS répéter la date ni l'heure (ex: 'Rendez-vous dentiste' et non 'Rendez-vous dentiste le 12/01 à 14h')",
+            "action_items": ["Liste", "des actions", "à faire"],
+            "required_equipment": ["Liste", "matériel", "à apporter"],
             
             // CHAMPS SPÉCIFIQUES
             "amount": 0.00, // (Si Facture)
