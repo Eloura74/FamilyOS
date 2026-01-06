@@ -1,0 +1,419 @@
+{
+    "credentials": {
+        "api_key": "fps59me9baxt2y16jp58",
+        "api_secret": "d1217c2056f9418d8874641819c06dce",
+        "region": "eu"
+    },
+    "devices": [
+        {
+            "name": "Bureau LED3",
+            "id": "bf99db6e2e6435acfd6qrn",
+            "key": "#e^oCoCQ$Z?@Qev'",
+            "category": "dj",
+            "product_name": "ZC-TD WiFi gu10\u706f\u6ce1 V2.0",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "bureau priv\u00e9 porte",
+            "id": "bfcf3c0ea945ada0ab79vo",
+            "key": "}_64?jFQ9=MzTchA",
+            "category": "mcs",
+            "product_name": "Door sensor",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Capteur Etage",
+            "id": "bf52a36e0410dac7d5srb2",
+            "key": "`k7Kq=IFrNtm3sLB",
+            "category": "wsdcg",
+            "product_name": "TH01CB3S",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Passerelle ZigBee",
+            "id": "bf500ce0bca58b7595jsff",
+            "key": "c9a7594a7fc8800d",
+            "category": "wfcon",
+            "product_name": "Gateway Zigbee Smart Home KAT",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Canap\u00e9",
+            "id": "084582802462ab3d58d6",
+            "key": "=v9WP{b'w%MQij}>",
+            "category": "dj",
+            "product_name": "E27 RGB CCT",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "portail",
+            "id": "bf79bdf02e9d3eed0fxhjb",
+            "key": "+Yz]tf/ejKy2qgB3",
+            "category": "mcs",
+            "product_name": "\u95e8\u7a97\u4f20\u611f\u5668wifi",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Capteur Salon",
+            "id": "bff1e6837be21dc896nky0",
+            "key": "@`ubw8|D#H-Ol1ey",
+            "category": "wsdcg",
+            "product_name": "TH01CB3S",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "\u00e9clairage isaac",
+            "id": "bfcb6feee9cad65081a8ho",
+            "key": "M^9IwX:V^w9QF>sZ",
+            "category": "xdd",
+            "product_name": "SMART CEILING LIGHT",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Porte Chambre parentale",
+            "id": "bff608627ea82d5131wt5u",
+            "key": "i&)@S|r6:|:SFsyr",
+            "category": "mcs",
+            "product_name": "WIFI\u95e8\u78c1",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Porte garage",
+            "id": "bf8c7a0809b8695f76wcah",
+            "key": "OU;kddZ2yKfDM8to",
+            "category": "mcs",
+            "product_name": "WIFI\u95e8\u78c1",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Camera_ext_1",
+            "id": "bff688ec699db8b172qr6m",
+            "key": "Z*hl-W[4/`NutNcU",
+            "category": "sp",
+            "product_name": "YY-\u53cc\u5149-0",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Ambilight",
+            "id": "bf3fa95f74fc8d0f3f6yia",
+            "key": "j'X~)H?MF$jr5tnb",
+            "category": "sxtpmtbq",
+            "product_name": "\u6444\u50cf\u5934\u5c4f\u5e55\u540c\u6b65\u5668-Alexa -\u65b0\u706f\u5e26-V2-BRG",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Cam\u00e9ra Salon",
+            "id": "bf5a5c6f09b753b588f93v",
+            "key": "H0J2<3-_ZYZ_th+B",
+            "category": "sp",
+            "product_name": "JS-P162 300W",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "\u00e9clairage Cible",
+            "id": "bf13abb9462bc9348fc18b",
+            "key": "0f]O)KAW:?x}2>UT",
+            "category": "tdq",
+            "product_name": "Aubess Smart Switch 1-gang",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "rideau ext\u00e9rieur",
+            "id": "bf42ade73aeed30540ey8q",
+            "key": "My~C[#l$A(txlfZP",
+            "category": "cz",
+            "product_name": "Wifi Plug",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "guirlande ext\u00e9rieur",
+            "id": "bf1569bbb4941386cbct98",
+            "key": "5PeA<p<':aR.(|(d",
+            "category": "cz",
+            "product_name": "Wifi Plug",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "sapin",
+            "id": "bf874bd7de0ee1d22618ks",
+            "key": "3hPOSNNAKw*W3[&Z",
+            "category": "cz",
+            "product_name": "smart plug",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Sonnette ext\u00e9rieur",
+            "id": "bf8d42b594d7da1ea44dvx",
+            "key": "bS-KXM;L*CoiMre1",
+            "category": "sp",
+            "product_name": "IP06-\u751f\u4ea70906",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Led Switchwire",
+            "id": "bfd8a37df90618f8fcawk4",
+            "key": "c9a7594a7fc8800d",
+            "category": "dj",
+            "product_name": "Lidl RGBCW Light strip Sunpu ZS3L",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Interrupteur Bureau",
+            "id": "bf48d537526a98951anule",
+            "key": "c9a7594a7fc8800d",
+            "category": "wxkg",
+            "product_name": "\u4e00\u8def\u65e0\u7ebf\u5f00\u5173_Zigbee",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Capteur Garage",
+            "id": "bf47e945a89287e2feznih",
+            "key": "c9a7594a7fc8800d",
+            "category": "mcs",
+            "product_name": "Door & Windows Sensor",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "VzBot",
+            "id": "bf5c4ed155cf7ac7990axk",
+            "key": "c9a7594a7fc8800d",
+            "category": "cz",
+            "product_name": "One-way smart socket (FR) ",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Escalier",
+            "id": "bfd71787d96059a55b7rui",
+            "key": "gJz=vLzc*_2!F:#L",
+            "category": "dj",
+            "product_name": "Smart Bulb",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "chemin\u00e9e",
+            "id": "084582802462ab3d4f71",
+            "key": "1HF;]:c7p!uj`jGc",
+            "category": "dj",
+            "product_name": "E27 RGB CCT",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Interrupteur terrasse",
+            "id": "bf9e036773e39c0f66vdgl",
+            "key": "c9a7594a7fc8800d",
+            "category": "wxkg",
+            "product_name": "\u4e00\u8def\u65e0\u7ebf\u5f00\u5173_Zigbee",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Spot bureau \u00e9cran",
+            "id": "bf5b809943cde8eab1mxdp",
+            "key": "}/[TA(6-5:TeCy7c",
+            "category": "dd",
+            "product_name": "LSC Moodlight RGB+CCT",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "piscine",
+            "id": "bfd9769cce61785a12izp4",
+            "key": "g>}0;)gVqr@hlpSe",
+            "category": "tdq",
+            "product_name": "\u901a\u65ad\u5668",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "temp\u00e9rature ext\u00e9rieure",
+            "id": "bf029735c98ebd00a8blad",
+            "key": "/u~+Sp&[+Qq[{O<N",
+            "category": "wsdcg",
+            "product_name": "\u6e29\u6e7f\u5ea6\u4f20\u611f\u5668wifi",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "led bureau 3",
+            "id": "bf7a607be21d603c09lolq",
+            "key": "Qh}`Fr=-`'&82yR?",
+            "category": "dj",
+            "product_name": "LSC Glass GU10 RGBCCT",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "\u00e9clairage terrasse",
+            "id": "bf4e378001818540e7ry3t",
+            "key": "b$kPvvPSjso}k&Cc",
+            "category": "tdq",
+            "product_name": "Aubess Smart Switch 1-gang",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Capteur chambre Aaron",
+            "id": "bf71717cac3ee1c543kle8",
+            "key": "~C-IjFwf2HueePKn",
+            "category": "mcs",
+            "product_name": "WIFI\u95e8\u78c1",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Switchwire",
+            "id": "bfeb805b26b9059f70tc0e",
+            "key": "083acddf51f5d420",
+            "category": "cz",
+            "product_name": "smart plug",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Cuisine",
+            "id": "bf4e42zojjiafelx",
+            "key": "82FD90EB21C07739",
+            "category": "dj",
+            "product_name": "SD TB GU10 ",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Cuisine",
+            "id": "bfb343yc8mw34him",
+            "key": "E39BE60C9A41601F",
+            "category": "dj",
+            "product_name": "SD TB GU10 ",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "piscine",
+            "id": "bf564f95ddbf012efe6qxj",
+            "key": "J;|Q6ivwJf[bu#I=",
+            "category": "sp",
+            "product_name": "JS-P162 300W",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Capteur Bureau",
+            "id": "bfd6ab91392dd1c693l6i9",
+            "key": "7HB1!5_`ae)B3Z3p",
+            "category": "wsdcg",
+            "product_name": "TH01CB3S",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "360Camera",
+            "id": "bfe3241c52d8d33d79goca",
+            "key": "EOcb:h[9_B%f)]!Y",
+            "category": "sp",
+            "product_name": "LSC PTZ Camera",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Bureau LED1",
+            "id": "bfb3414db8a2405c3ckaqb",
+            "key": ";dHNd_Q<Sa}gpG)3",
+            "category": "dj",
+            "product_name": "GU10 W505Z2",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Led bureau",
+            "id": "bfc00d4m4lgu7zut",
+            "key": "1846F0E5411C4C6D",
+            "category": "dj",
+            "product_name": "SD TB GU10 ",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Clim Salon",
+            "id": "bfb47f05ae0fafbe92vrzc",
+            "key": "j?C)PvQ#=yRZc;14",
+            "category": "wnykq",
+            "product_name": "Wi-Fi IR Remote Control",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "BRT-RGB-vdevo",
+            "id": "vdevo164356281026757",
+            "key": "388b212106b4dbb9",
+            "category": "dj",
+            "product_name": "BRT-RGB Stip",
+            "online": false,
+            "wakeup_routine": false,
+            "wakeup_action": "ON"
+        }
+    ]
+}
