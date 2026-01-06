@@ -192,26 +192,137 @@ class TuyaManager:
              
         return False
 
-    def execute_wakeup_routine(self, briefing_id: str = None):
-        """Executes actions for devices linked to the specific briefing."""
+    def send_dps(self, device_id: str, dps: Dict[str, Any]):
+        """Send specific DPS values (converted to commands) to a device."""
+        commands = []
+        for code, value in dps.items():
+            commands.append({"code": code, "value": value})
+        
+        if self.cloud:
+            try:
+                self.cloud.sendcommand(device_id, {"commands": commands})
+                return True
+            except Exception as e:
+                print(f"Error sending DPS to {device_id}: {e}")
+                return False
+        return False
+
+    async def _progressive_wake(self, device_id: str, duration: int, target_val: int):
+        """Augmente progressivement la luminosité"""
+        import asyncio
+        print(f"DEBUG: Starting progressive wake for {device_id}. Duration: {duration}s, Target: {target_val}")
+        
+        # Find device to check category
+        device = next((d for d in self.devices if d["id"] == device_id), None)
+        switch_code = "switch_led" # Default for lights
+        if device:
+            if device.get("category") in ["cz", "pc"]:
+                switch_code = "switch_1"
+            elif device.get("category") in ["dj", "xdd"]:
+                switch_code = "switch_led"
+        
+        try:
+            # 1. Allumer la lampe au minimum (Envoi combiné propre)
+            commands = [
+                {"code": "bright_value", "value": 10},
+                {"code": "bright_value_v2", "value": 10},
+                {"code": switch_code, "value": True}
+            ]
+            
+            success = False
+            if self.cloud:
+                try:
+                    res = self.cloud.sendcommand(device_id, {"commands": commands})
+                    if res.get("success"):
+                        success = True
+                    else:
+                        print(f"WARN: Combined command failed: {res}")
+                except Exception as e:
+                    print(f"WARN: Error sending combined command: {e}")
+
+            # Fallback: If combined failed or we are not sure, ensure it's ON
+            if not success:
+                print("DEBUG: Fallback to standard ON command")
+                self.send_command(device_id, "ON")
+                await asyncio.sleep(0.5)
+                self.send_dps(device_id, {"bright_value": 10, "bright_value_v2": 10})
+            
+            await asyncio.sleep(1)
+            
+            # 2. Calculer les étapes
+            steps = 30 
+            step_duration = duration / steps
+            step_val = (target_val - 10) / steps
+            
+            current_val = 10
+            for i in range(steps):
+                current_val += step_val
+                val_int = int(current_val)
+                # print(f"DEBUG: Progressive step {i+1}/{steps}: Setting brightness to {val_int}")
+                
+                self.send_dps(device_id, {
+                    "bright_value": val_int,
+                    "bright_value_v2": val_int
+                })
+                await asyncio.sleep(step_duration)
+                
+            print(f"DEBUG: Progressive wake finished for {device_id}")
+            
+        except Exception as e:
+            print(f"ERROR: Progressive wake failed for {device_id}: {e}")
+
+    async def execute_wakeup_routine(self, briefing_id: str = None):
+        import asyncio
+        
         results = []
+        progressive_tasks = []
+
+        print(f"DEBUG: Executing wakeup routine. Briefing ID: {briefing_id}")
+
         for device in self.devices:
             should_trigger = False
+            action_config = None
             
             if briefing_id:
-                # New logic: check if device is linked to this briefing
                 if briefing_id in device.get("briefing_ids", []):
                     should_trigger = True
+                    actions = device.get("briefing_actions", {})
+                    action_config = actions.get(briefing_id)
             else:
-                # Legacy logic: check boolean flag
                 if device.get("wakeup_routine"):
                     should_trigger = True
 
             if should_trigger:
-                action = device.get("wakeup_action", "ON")
+                if not action_config:
+                    action_config = {"type": "ON"}
+                
+                print(f"DEBUG: Triggering device {device['name']} ({device['id']}). Action: {action_config}")
+
                 try:
-                    self.send_command(device["id"], action)
-                    results.append({"id": device["id"], "status": "success"})
+                    if action_config.get("type") == "PROGRESSIVE":
+                        duration = action_config.get("duration", 10) * 60 
+                        target = action_config.get("target", 1000) 
+                        
+                        # Add to tasks list to run in parallel
+                        progressive_tasks.append(self._progressive_wake(device["id"], duration, target))
+                        results.append({"id": device["id"], "status": "started_progressive"})
+                        
+                    elif action_config.get("type") == "VALUE":
+                        val = action_config.get("target", 1000)
+                        self.send_dps(device["id"], {"bright_value": val, "switch_led": True})
+                        results.append({"id": device["id"], "status": "success"})
+                        
+                    else:
+                        self.send_command(device["id"], "ON")
+                        results.append({"id": device["id"], "status": "success"})
+                        
                 except Exception as e:
+                    print(f"ERROR: Failed to execute action for {device['name']}: {e}")
                     results.append({"id": device["id"], "status": "error", "message": str(e)})
+        
+        # Run all progressive tasks in parallel
+        if progressive_tasks:
+            print(f"DEBUG: Running {len(progressive_tasks)} progressive tasks in parallel")
+            await asyncio.gather(*progressive_tasks)
+            
         return results

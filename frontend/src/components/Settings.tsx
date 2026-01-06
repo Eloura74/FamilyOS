@@ -23,7 +23,7 @@ interface BriefingConfig {
   id: string;
   title: string;
   time: string;
-  enabled: bool;
+  enabled: boolean;
   content: {
     weather: boolean;
     calendar: boolean;
@@ -60,6 +60,12 @@ interface TuyaCredentials {
   region: string;
 }
 
+interface ActionConfig {
+  type: "ON" | "PROGRESSIVE" | "VALUE";
+  duration?: number; // minutes
+  target?: number; // 0-1000
+}
+
 interface TuyaDevice {
   id: string;
   name: string;
@@ -67,7 +73,8 @@ interface TuyaDevice {
   product_name: string;
   online: boolean;
   wakeup_routine: boolean; // Deprecated
-  briefing_ids: string[]; // New
+  briefing_ids: string[];
+  briefing_actions?: Record<string, ActionConfig>; // New
   wakeup_action: string;
 }
 
@@ -78,12 +85,14 @@ function SortableDeviceItem({
   handleToggleBriefing,
   handleClearBriefings,
   handleTestDevice,
+  onConfigureAction,
 }: {
   device: TuyaDevice;
   briefings: BriefingConfig[];
   handleToggleBriefing: (device: TuyaDevice, briefingId: string) => void;
   handleClearBriefings: (device: TuyaDevice) => void;
   handleTestDevice: (deviceId: string, action: string) => void;
+  onConfigureAction: (device: TuyaDevice, briefingId: string) => void;
 }) {
   const {
     attributes,
@@ -156,11 +165,17 @@ function SortableDeviceItem({
             title="Lier aux briefings"
           >
             <span className="text-xs font-bold uppercase tracking-wider">
-              {activeBriefingsCount > 0
-                ? `${activeBriefingsCount} Briefing${
-                    activeBriefingsCount > 1 ? "s" : ""
-                  }`
-                : "Aucun"}
+              {(() => {
+                const count = device.briefing_ids?.length || 0;
+                if (count === 0) return "Aucun";
+                if (count === 1) {
+                  const briefing = briefings.find(
+                    (b) => b.id === device.briefing_ids[0]
+                  );
+                  return briefing ? briefing.title : "1 Briefing";
+                }
+                return `${count} Briefings`;
+              })()}
             </span>
             <span className="text-xs">🔗</span>
           </button>
@@ -197,21 +212,39 @@ function SortableDeviceItem({
                   {briefings.map((briefing) => {
                     const isActive = device.briefing_ids?.includes(briefing.id);
                     return (
-                      <button
+                      <div
                         key={briefing.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleBriefing(device, briefing.id);
-                        }}
-                        className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
+                        className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-colors ${
                           isActive
                             ? "bg-blue-600/20 text-blue-300"
                             : "hover:bg-slate-800 text-slate-400"
                         }`}
                       >
-                        <span className="truncate">{briefing.title}</span>
-                        {isActive && <span>✓</span>}
-                      </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleBriefing(device, briefing.id);
+                          }}
+                          className="flex-1 text-left text-xs font-medium flex items-center gap-2"
+                        >
+                          <span className="truncate">{briefing.title}</span>
+                          {isActive && <span>✓</span>}
+                        </button>
+
+                        {isActive && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onConfigureAction(device, briefing.id);
+                              setShowBriefingSelect(false);
+                            }}
+                            className="p-1 hover:bg-blue-500/20 rounded text-slate-400 hover:text-blue-300 transition-colors"
+                            title="Configurer l'action"
+                          >
+                            ⚙️
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
@@ -314,6 +347,60 @@ export default function Settings() {
       notes: true,
     },
   });
+
+  // Action Configuration State
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [editingActionDevice, setEditingActionDevice] =
+    useState<TuyaDevice | null>(null);
+  const [editingActionBriefingId, setEditingActionBriefingId] = useState<
+    string | null
+  >(null);
+  const [actionForm, setActionForm] = useState<ActionConfig>({ type: "ON" });
+
+  const openActionModal = (device: TuyaDevice, briefingId: string) => {
+    setEditingActionDevice(device);
+    setEditingActionBriefingId(briefingId);
+
+    const existingAction = device.briefing_actions?.[briefingId];
+    setActionForm(existingAction || { type: "ON", duration: 10, target: 1000 });
+
+    setShowActionModal(true);
+  };
+
+  const handleSaveAction = async () => {
+    if (!editingActionDevice || !editingActionBriefingId) return;
+
+    const newActions = {
+      ...(editingActionDevice.briefing_actions || {}),
+      [editingActionBriefingId]: actionForm,
+    };
+
+    // Optimistic Update
+    setTuyaDevices(
+      tuyaDevices.map((d) =>
+        d.id === editingActionDevice.id
+          ? { ...d, briefing_actions: newActions }
+          : d
+      )
+    );
+
+    try {
+      await fetch(
+        `${import.meta.env.VITE_API_URL}/api/tuya/device/${
+          editingActionDevice.id
+        }/settings`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ briefing_actions: newActions }),
+        }
+      );
+      setShowActionModal(false);
+    } catch (error) {
+      console.error("Erreur save action:", error);
+      alert("Erreur lors de la sauvegarde de l'action.");
+    }
+  };
 
   // UI State
   const [expandedSection, setExpandedSection] = useState<string | null>(
@@ -866,6 +953,7 @@ export default function Settings() {
                         handleToggleBriefing={handleToggleBriefing}
                         handleClearBriefings={handleClearBriefings}
                         handleTestDevice={handleTestDevice}
+                        onConfigureAction={openActionModal}
                       />
                     ))}
                   </div>
@@ -1228,6 +1316,122 @@ export default function Settings() {
                 className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors"
               >
                 Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Action Configuration Modal */}
+      {showActionModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <h2 className="text-lg font-bold text-white mb-4">
+              Configurer l'action
+            </h2>
+
+            <div className="space-y-4">
+              {/* Type Selection */}
+              <div>
+                <label className="block text-sm text-slate-400 mb-2">
+                  Mode
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["ON", "PROGRESSIVE", "VALUE"] as const).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setActionForm({ ...actionForm, type })}
+                      className={`py-2 px-1 rounded-lg text-xs font-bold transition-colors ${
+                        actionForm.type === type
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                      }`}
+                    >
+                      {type === "ON" && "ON/OFF"}
+                      {type === "PROGRESSIVE" && "Progressif"}
+                      {type === "VALUE" && "Valeur Fixe"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Progressive Options */}
+              {actionForm.type === "PROGRESSIVE" && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">
+                      Durée (minutes)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="60"
+                      value={actionForm.duration || 10}
+                      onChange={(e) =>
+                        setActionForm({
+                          ...actionForm,
+                          duration: parseInt(e.target.value) || 10,
+                        })
+                      }
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">
+                      Cible (0-1000)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="1000"
+                      value={actionForm.target || 1000}
+                      onChange={(e) =>
+                        setActionForm({
+                          ...actionForm,
+                          target: parseInt(e.target.value) || 1000,
+                        })
+                      }
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Value Options */}
+              {actionForm.type === "VALUE" && (
+                <div className="animate-in fade-in slide-in-from-top-2">
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Valeur (0-1000)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="1000"
+                    value={actionForm.target || 1000}
+                    onChange={(e) =>
+                      setActionForm({
+                        ...actionForm,
+                        target: parseInt(e.target.value) || 1000,
+                      })
+                    }
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowActionModal(false)}
+                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSaveAction}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors"
+              >
+                Sauvegarder
               </button>
             </div>
           </div>

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 from pathlib import Path
-from fastapi import HTTPException
+from fastapi import HTTPException, BackgroundTasks
 
 from backend.api import weather, calendar, meals, budget, documents, auth, gmail, settings
 from backend.integrations.tts import generate_audio_briefing
@@ -97,7 +97,7 @@ def read_root():
     return {"message": "FamilyOS Backend is running"}
 
 @app.get("/api/briefing")
-async def get_briefing(briefing_id: str = None):
+async def get_briefing(background_tasks: BackgroundTasks, briefing_id: str = None):
     try:
         # 1. Récupération des données
         weather_data = await get_weather_forecast()
@@ -141,12 +141,8 @@ async def get_briefing(briefing_id: str = None):
         audio_url = await generate_audio_briefing(briefing_text)
         
         # 4. Déclenchement Domotique (Réveil)
-        # On lance la routine domotique en tâche de fond (ou on attend, c'est rapide)
-        # Ici on l'appelle simplement pour qu'elle s'exécute au moment du briefing
-        try:
-            tuya_manager.execute_wakeup_routine(briefing_id)
-        except Exception as e:
-            print(f"Erreur domotique: {e}")
+        # On lance la routine domotique en tâche de fond via BackgroundTasks
+        background_tasks.add_task(tuya_manager.execute_wakeup_routine, briefing_id)
         
         return {
             "text": briefing_text,
