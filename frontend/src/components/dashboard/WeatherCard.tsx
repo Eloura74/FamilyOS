@@ -27,18 +27,22 @@ export default function WeatherCard({
 
   return (
     <div
-      className={`relative group overflow-hidden rounded-3xl transition-all duration-500 ease-out select-none ${
+      className={`relative group rounded-3xl transition-all duration-500 ease-out select-none ${
         isExpanded
           ? "bg-slate-900/80 border border-white/10 shadow-2xl shadow-black/50 backdrop-blur-3xl"
-          : "bg-linear-to-br from-slate-800/30 to-slate-900/30 border-t border-l border-white/10 border-b border-r border-black/20 shadow-lg hover:shadow-xl hover:bg-slate-800/40 hover:scale-[1.02] backdrop-blur-2xl"
+          : "overflow-hidden bg-linear-to-br from-slate-800/30 to-slate-900/30 border-t border-l border-white/10 border-b border-r border-black/20 shadow-lg hover:shadow-xl hover:bg-slate-800/40 hover:scale-[1.02] backdrop-blur-2xl"
       }`}
     >
       {/* Glow Effect */}
-      <div className="absolute -inset-0.5 bg-linear-to-r from-blue-600/20 to-slate-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"></div>
+      <div className="absolute -inset-0.5 bg-linear-to-r from-blue-600/20 to-slate-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none rounded-3xl"></div>
 
       <button
         onClick={() => toggleSection("weather")}
-        className="w-full p-5 flex items-center justify-between cursor-pointer group relative z-10"
+        className={`w-full p-5 flex items-center justify-between cursor-pointer group relative z-40 transition-all duration-300 ${
+          isExpanded
+            ? "sticky top-0 bg-slate-900/90 backdrop-blur-xl border-b border-white/5 rounded-t-3xl shadow-lg"
+            : ""
+        }`}
       >
         <div className="flex items-center gap-4">
           <div className="text-4xl drop-shadow-md filter">

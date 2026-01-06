@@ -17,17 +17,27 @@ export default function MealsCard({
 
   return (
     <div
-      className={`relative group overflow-hidden rounded-3xl transition-all duration-500 ease-out select-none ${
+      className={`relative group rounded-3xl transition-all duration-500 ease-out select-none ${
         isExpanded
           ? "bg-slate-900/80 border border-white/10 shadow-2xl shadow-black/50 backdrop-blur-3xl"
-          : "bg-linear-to-br from-slate-800/30 to-slate-900/30 border-t border-l border-white/10 border-b border-r border-black/20 shadow-lg hover:shadow-xl hover:bg-slate-800/40 hover:scale-[1.02] backdrop-blur-2xl"
+          : "overflow-hidden bg-linear-to-br from-slate-800/30 to-slate-900/30 border-t border-l border-white/10 border-b border-r border-black/20 shadow-lg hover:shadow-xl hover:bg-slate-800/40 hover:scale-[1.02] backdrop-blur-2xl"
       }`}
     >
       {/* Glow Effect */}
-      <div className="absolute -inset-0.5 bg-linear-to-r from-orange-600/20 to-amber-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"></div>
+      <div className="absolute -inset-0.5 bg-linear-to-r from-orange-600/20 to-amber-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none rounded-3xl"></div>
 
-      <div className="relative p-5">
-        <div className="flex items-center justify-between mb-2">
+      <div
+        className={`relative transition-all duration-300 ${
+          isExpanded ? "p-0" : "p-5"
+        }`}
+      >
+        <div
+          className={`flex items-center justify-between mb-2 relative z-40 ${
+            isExpanded
+              ? "sticky top-0 bg-slate-900/90 backdrop-blur-xl border-b border-white/5 rounded-t-3xl shadow-lg p-5"
+              : ""
+          }`}
+        >
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-linear-to-br from-orange-600 to-amber-700 flex items-center justify-center text-xl text-white shadow-lg shadow-orange-900/20 ring-1 ring-white/10">
               🍽️
@@ -72,7 +82,7 @@ export default function MealsCard({
 
         {/* Vue Planning Complet (Accordéon) */}
         {isExpanded ? (
-          <div className="space-y-3 mt-4 animate-in slide-in-from-top-2 cursor-default">
+          <div className="space-y-3 mt-4 animate-in slide-in-from-top-2 cursor-default px-5 pb-5">
             {Object.keys(meals).length === 0 ? (
               <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
                 <p className="text-slate-400 italic text-sm">
