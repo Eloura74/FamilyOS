@@ -13,27 +13,29 @@ export default function ClothingCard({
 
   return (
     <div
-      className={`relative group overflow-hidden rounded-3xl border transition-all duration-300 select-none ${
+      className={`relative group overflow-hidden rounded-3xl transition-all duration-500 ease-out select-none ${
         isExpanded
-          ? "bg-slate-900/80 border-slate-700/50 shadow-2xl"
-          : "bg-white/5 border-white/10 hover:bg-white/10"
-      } backdrop-blur-xl`}
+          ? "bg-slate-900/80 border border-white/10 shadow-2xl shadow-black/50 backdrop-blur-3xl"
+          : "bg-linear-to-br from-slate-800/30 to-slate-900/30 border-t border-l border-white/10 border-b border-r border-black/20 shadow-lg hover:shadow-xl hover:bg-slate-800/40 hover:scale-[1.02] backdrop-blur-2xl"
+      }`}
     >
       {/* Glow Effect */}
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"></div>
+      <div className="absolute -inset-0.5 bg-linear-to-r from-violet-600/20 to-purple-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"></div>
 
       <button
         onClick={() => toggleSection("clothing")}
         className="w-full p-5 flex items-center justify-between cursor-pointer group relative z-10"
       >
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-purple-500/20 flex items-center justify-center text-2xl text-purple-400">
+          <div className="h-12 w-12 rounded-2xl bg-linear-to-br from-violet-600 to-purple-700 flex items-center justify-center text-2xl text-white shadow-lg shadow-purple-900/20 ring-1 ring-white/10">
             👕
           </div>
           <div className="text-left">
-            <h2 className="font-bold text-white text-base">Tenue conseillée</h2>
+            <h2 className="font-medium text-white text-base tracking-wide">
+              Tenue conseillée
+            </h2>
             {!isExpanded && (
-              <p className="text-xs text-purple-300 truncate max-w-[200px] font-medium">
+              <p className="text-xs text-purple-200/70 truncate max-w-[200px] font-medium">
                 {weather?.recommendation?.summary}
               </p>
             )}

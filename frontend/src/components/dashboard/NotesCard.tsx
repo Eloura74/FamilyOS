@@ -178,31 +178,35 @@ export default function NotesCard({
 
   return (
     <div
-      className={`rounded-3xl border transition-all duration-300 select-none overflow-hidden ${
+      className={`relative group overflow-hidden rounded-3xl transition-all duration-500 ease-out select-none ${
         isExpanded
-          ? "bg-yellow-900/20 border-yellow-500/30 shadow-2xl"
-          : "bg-white/5 border-white/10 hover:bg-white/10"
-      } backdrop-blur-xl group`}
+          ? "bg-slate-900/80 border border-white/10 shadow-2xl shadow-black/50 backdrop-blur-3xl"
+          : "bg-linear-to-br from-slate-800/30 to-slate-900/30 border-t border-l border-white/10 border-b border-r border-black/20 shadow-lg hover:shadow-xl hover:bg-slate-800/40 hover:scale-[1.02] backdrop-blur-2xl"
+      }`}
     >
+      {/* Glow Effect */}
+      <div className="absolute -inset-0.5 bg-linear-to-r from-amber-400/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none"></div>
       <button
         onClick={() => toggleSection("notes")}
         className="w-full p-5 flex items-center justify-between cursor-pointer"
       >
         <div className="flex items-center gap-4">
           <div
-            className={`h-12 w-12 rounded-2xl flex items-center justify-center text-2xl transition-colors ${
+            className={`h-12 w-12 rounded-2xl flex items-center justify-center text-2xl transition-colors shadow-lg ${
               notes.length > 0
-                ? "bg-yellow-500/20 text-yellow-400"
-                : "bg-slate-700/30 text-slate-500"
+                ? "bg-linear-to-br from-amber-400 to-orange-500 text-white shadow-amber-900/20 ring-1 ring-white/10"
+                : "bg-slate-800/50 text-slate-500 border border-white/5"
             }`}
           >
             📝
           </div>
           <div className="text-left">
-            <h2 className="font-bold text-white text-base">Frigo Numérique</h2>
+            <h2 className="font-medium text-white text-base tracking-wide">
+              Frigo Numérique
+            </h2>
             <p
               className={`text-xs font-medium ${
-                notes.length > 0 ? "text-yellow-400" : "text-slate-500"
+                notes.length > 0 ? "text-yellow-200/70" : "text-slate-500"
               }`}
             >
               {notes.length > 0

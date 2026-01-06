@@ -145,18 +145,29 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-['Inter'] p-4 pb-20">
-      <header className="flex items-center gap-4 mb-8">
-        <Link
-          to="/"
-          className="p-2 rounded-full bg-slate-800/50 border border-slate-700 text-slate-400 hover:text-white transition-colors"
+    <div className="min-h-screen bg-slate-950 text-white font-['Inter'] pb-32">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 p-4 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link
+            to="/"
+            className="p-2 rounded-full bg-slate-800/50 border border-slate-700 text-slate-400 hover:text-white transition-colors"
+          >
+            ⬅️
+          </Link>
+          <h1 className="text-xl font-bold">Paramètres</h1>
+        </div>
+        <button
+          onClick={handleSaveSettings}
+          disabled={saving}
+          className="p-2 text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50"
+          title="Sauvegarder"
         >
-          ⬅️
-        </Link>
-        <h1 className="text-2xl font-bold">Paramètres</h1>
+          💾
+        </button>
       </header>
 
-      <div className="space-y-8 max-w-md mx-auto">
+      <div className="p-4 space-y-8 max-w-md mx-auto">
         {/* Profil */}
         <section className="bg-slate-900/50 rounded-2xl p-5 border border-slate-800">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -372,14 +383,25 @@ export default function Settings() {
             </button>
           </div>
         </section>
+      </div>
 
-        {/* Save Button */}
+      {/* Sticky Footer Save Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/80 backdrop-blur-xl border-t border-slate-800 flex justify-center z-20">
         <button
           onClick={handleSaveSettings}
           disabled={saving}
-          className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full max-w-md py-4 bg-linear-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {saving ? "Sauvegarde..." : "Enregistrer les modifications"}
+          {saving ? (
+            <>
+              <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+              Sauvegarde...
+            </>
+          ) : (
+            <>
+              <span>💾</span> Enregistrer les modifications
+            </>
+          )}
         </button>
       </div>
     </div>

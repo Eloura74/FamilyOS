@@ -585,24 +585,29 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-['Inter'] selection:bg-blue-500/30 pb-20">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black text-white font-['Inter'] selection:bg-blue-500/30 pb-20">
       <div className="max-w-md mx-auto p-4">
         {/* Header Compact */}
-        <header className="mb-6 flex items-center justify-between">
+        <header className="mb-8 flex items-center justify-between pt-2">
           <div>
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-purple-400">
-              Bonjour {settings?.nickname ? settings.nickname : ""} !
+            <h1 className="text-3xl font-light tracking-tight text-white drop-shadow-sm">
+              Bonjour{" "}
+              <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-300 via-indigo-300 to-purple-300">
+                {settings?.nickname ? settings.nickname : ""}
+              </span>
             </h1>
-            <p className="text-slate-400 text-sm capitalize">{today}</p>
+            <p className="text-slate-400 text-sm capitalize mt-1 font-medium tracking-wide opacity-80">
+              {today}
+            </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={playBriefing}
               disabled={briefingPlaying}
-              className={`p-2 rounded-full border transition-all ${
+              className={`p-3 rounded-full border transition-all duration-300 shadow-lg ${
                 briefingPlaying
-                  ? "bg-green-500/20 border-green-500 text-green-400 animate-pulse"
-                  : "bg-slate-800/50 border-slate-700 text-slate-400"
+                  ? "bg-green-500/20 border-green-500 text-green-400 animate-pulse shadow-green-500/20"
+                  : "bg-slate-800/40 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:text-white backdrop-blur-md"
               }`}
               title="Écouter le briefing"
             >
@@ -610,7 +615,7 @@ export default function Dashboard() {
             </button>
             <a
               href="/settings"
-              className="p-2 bg-slate-800/50 rounded-full border border-slate-700 text-slate-400"
+              className="p-3 bg-slate-800/40 rounded-full border border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-300 backdrop-blur-md shadow-lg"
             >
               ⚙️
             </a>
@@ -642,7 +647,7 @@ export default function Dashboard() {
             setShowUploadModal(true);
             setAnalysisResult(null);
           }}
-          className="fixed bottom-6 right-6 p-4 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg shadow-blue-600/30 transition-all active:scale-95 z-50"
+          className="fixed bottom-6 right-6 p-4 bg-linear-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full shadow-lg shadow-blue-600/30 transition-all active:scale-95 z-50 border border-white/10"
         >
           <span className="text-2xl">📷</span>
         </button>
@@ -787,7 +792,7 @@ export default function Dashboard() {
 
         {/* Modale Confirmation Événement */}
         {showEventModal && proposedEvent && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-60 flex items-center justify-center p-4 animate-in fade-in duration-200">
             <div className="bg-slate-900 border border-blue-500/30 rounded-2xl p-6 w-full max-w-sm relative shadow-2xl shadow-blue-900/20">
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <span>📅</span> Confirmer le RDV

@@ -2,7 +2,7 @@
   "nickname": "quentin",
   "briefing_time": "00:18",
   "budget_limit": 900,
-  "auto_play_briefing": true,
+  "auto_play_briefing": false,
   "home_address": "25 Ronde des Bolles, 13800 Istres, France",
   "work_address": "8 Rte du Camp d'Aviation, 13800 Istres, France",
   "work_arrival_time": "08:00",
