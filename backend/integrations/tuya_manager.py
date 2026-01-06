@@ -14,11 +14,27 @@ class TuyaManager:
         return self.credentials
 
     def _load_credentials(self) -> Dict[str, str]:
+        # 1. Environment Variables (Priority)
+        api_key = os.getenv("TUYA_API_KEY")
+        api_secret = os.getenv("TUYA_API_SECRET")
+        region = os.getenv("TUYA_REGION", "eu")
+
+        if api_key and api_secret:
+            return {
+                "api_key": api_key,
+                "api_secret": api_secret,
+                "region": region,
+                "source": "env"
+            }
+
+        # 2. Local Storage (Fallback)
         if os.path.exists(self.storage_file):
             try:
                 with open(self.storage_file, 'r') as f:
                     data = json.load(f)
-                    return data.get("credentials", {})
+                    creds = data.get("credentials", {})
+                    creds["source"] = "local"
+                    return creds
             except:
                 return {}
         return {}

@@ -5,8 +5,12 @@ const config: CapacitorConfig = {
   appName: "FamilyOS",
   webDir: "dist",
   server: {
-    url: "http://localhost:5173",
+    androidScheme: "http",
     cleartext: true,
+    allowNavigation: ["*"],
+  },
+  android: {
+    allowMixedContent: true,
   },
 };
 

@@ -17,64 +17,11 @@
             "wakeup_action": "ON"
         },
         {
-            "name": "Cam\u00e9ra Salon",
-            "id": "bf5a5c6f09b753b588f93v",
-            "key": "H0J2<3-_ZYZ_th+B",
-            "category": "sp",
-            "product_name": "JS-P162 300W",
-            "online": false,
-            "wakeup_routine": false,
-            "briefing_ids": [],
-            "wakeup_action": "ON"
-        },
-        {
-            "name": "Passerelle ZigBee",
-            "id": "bf500ce0bca58b7595jsff",
-            "key": "c9a7594a7fc8800d",
-            "category": "wfcon",
-            "product_name": "Gateway Zigbee Smart Home KAT",
-            "online": false,
-            "wakeup_routine": false,
-            "briefing_ids": [],
-            "wakeup_action": "ON"
-        },
-        {
-            "name": "Canap\u00e9",
-            "id": "084582802462ab3d58d6",
-            "key": "=v9WP{b'w%MQij}>",
-            "category": "dj",
-            "product_name": "E27 RGB CCT",
-            "online": false,
-            "wakeup_routine": false,
-            "briefing_ids": [
-                "cfafb089-6523-4e0b-a956-5d7c123a1c08"
-            ],
-            "wakeup_action": "ON",
-            "briefing_actions": {
-                "cfafb089-6523-4e0b-a956-5d7c123a1c08": {
-                    "type": "PROGRESSIVE",
-                    "duration": 2,
-                    "target": 1000
-                }
-            }
-        },
-        {
-            "name": "Ambilight",
-            "id": "bf3fa95f74fc8d0f3f6yia",
-            "key": "j'X~)H?MF$jr5tnb",
-            "category": "sxtpmtbq",
-            "product_name": "\u6444\u50cf\u5934\u5c4f\u5e55\u540c\u6b65\u5668-Alexa -\u65b0\u706f\u5e26-V2-BRG",
-            "online": false,
-            "wakeup_routine": false,
-            "briefing_ids": [],
-            "wakeup_action": "ON"
-        },
-        {
-            "name": "Camera_ext_1",
-            "id": "bff688ec699db8b172qr6m",
-            "key": "Z*hl-W[4/`NutNcU",
-            "category": "sp",
-            "product_name": "YY-\u53cc\u5149-0",
+            "name": "Capteur Salon",
+            "id": "bff1e6837be21dc896nky0",
+            "key": "@`ubw8|D#H-Ol1ey",
+            "category": "wsdcg",
+            "product_name": "TH01CB3S",
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
@@ -92,11 +39,44 @@
             "wakeup_action": "ON"
         },
         {
-            "name": "Capteur Salon",
-            "id": "bff1e6837be21dc896nky0",
-            "key": "@`ubw8|D#H-Ol1ey",
-            "category": "wsdcg",
-            "product_name": "TH01CB3S",
+            "name": "Ambilight",
+            "id": "bf3fa95f74fc8d0f3f6yia",
+            "key": "j'X~)H?MF$jr5tnb",
+            "category": "sxtpmtbq",
+            "product_name": "\u6444\u50cf\u5934\u5c4f\u5e55\u540c\u6b65\u5668-Alexa -\u65b0\u706f\u5e26-V2-BRG",
+            "online": false,
+            "wakeup_routine": false,
+            "briefing_ids": [],
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Passerelle ZigBee",
+            "id": "bf500ce0bca58b7595jsff",
+            "key": "c9a7594a7fc8800d",
+            "category": "wfcon",
+            "product_name": "Gateway Zigbee Smart Home KAT",
+            "online": false,
+            "wakeup_routine": false,
+            "briefing_ids": [],
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Camera_ext_1",
+            "id": "bff688ec699db8b172qr6m",
+            "key": "Z*hl-W[4/`NutNcU",
+            "category": "sp",
+            "product_name": "YY-\u53cc\u5149-0",
+            "online": false,
+            "wakeup_routine": false,
+            "briefing_ids": [],
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Cam\u00e9ra Salon",
+            "id": "bf5a5c6f09b753b588f93v",
+            "key": "H0J2<3-_ZYZ_th+B",
+            "category": "sp",
+            "product_name": "JS-P162 300W",
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
@@ -111,6 +91,19 @@
             "online": false,
             "wakeup_routine": false,
             "briefing_ids": [],
+            "wakeup_action": "ON"
+        },
+        {
+            "name": "Canap\u00e9",
+            "id": "084582802462ab3d58d6",
+            "key": "=v9WP{b'w%MQij}>",
+            "category": "dj",
+            "product_name": "E27 RGB CCT",
+            "online": false,
+            "wakeup_routine": false,
+            "briefing_ids": [
+                "cfafb089-6523-4e0b-a956-5d7c123a1c08"
+            ],
             "wakeup_action": "ON"
         },
         {

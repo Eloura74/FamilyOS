@@ -63,6 +63,7 @@ export interface TuyaCredentials {
   api_key: string;
   api_secret: string;
   region: string;
+  source?: "env" | "local";
 }
 
 export interface WeatherData {

@@ -30,6 +30,61 @@ export default function Login() {
           Continuer avec Google
         </button>
 
+        <div className="my-6 flex items-center gap-4">
+          <div className="h-px bg-slate-700 flex-1" />
+          <span className="text-slate-500 text-sm">OU</span>
+          <div className="h-px bg-slate-700 flex-1" />
+        </div>
+
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setDebugError("Connexion en cours...");
+
+            const formData = new FormData(e.currentTarget);
+            try {
+              const res = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/auth/login`,
+                {
+                  method: "POST",
+                  body: formData,
+                }
+              );
+              if (res.ok) {
+                const data = await res.json();
+                window.location.href = `/auth/callback?token=${data.access_token}`;
+              } else {
+                const errText = await res.text();
+                setDebugError(`Erreur ${res.status}: ${errText}`);
+              }
+            } catch (err: any) {
+              setDebugError(`Erreur Fetch: ${err.message || err}`);
+            }
+          }}
+          className="space-y-3"
+        >
+          <input
+            name="username"
+            type="email"
+            placeholder="Email"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+            required
+          />
+          <input
+            name="password"
+            type="password"
+            placeholder="Mot de passe"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+            required
+          />
+          <button
+            type="submit"
+            className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-6 rounded-xl transition-colors"
+          >
+            Se connecter
+          </button>
+        </form>
+
         <p className="mt-6 text-xs text-slate-500">
           En continuant, vous acceptez notre{" "}
           <a href="/privacy" className="underline hover:text-slate-400">

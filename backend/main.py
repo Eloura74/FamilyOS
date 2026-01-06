@@ -72,9 +72,16 @@ async def get_tuya_devices():
 @app.get("/api/tuya/credentials")
 async def get_tuya_credentials():
     creds = tuya_manager.get_credentials()
-    # On renvoie tout pour que le user n'ait pas à retaper, 
-    # mais en prod on pourrait masquer le secret.
-    # Ici le user veut que ça reste enregistré pour resynchro.
+    
+    # Si les crédentials viennent du .env, on masque les secrets
+    if creds.get("source") == "env":
+        return {
+            "api_key": "******",
+            "api_secret": "******",
+            "region": creds.get("region"),
+            "source": "env"
+        }
+        
     return creds
 
 @app.post("/api/tuya/device/{device_id}/settings")

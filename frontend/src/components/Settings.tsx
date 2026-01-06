@@ -849,39 +849,63 @@ export default function Settings() {
               Connectez votre compte Tuya IoT pour piloter vos appareils.
             </p>
             <div className="grid grid-cols-1 gap-3">
+              {tuyaCredentials.source === "env" && (
+                <div className="bg-blue-500/10 border border-blue-500/30 p-3 rounded-xl flex items-center gap-3 mb-2">
+                  <span className="text-xl">🔒</span>
+                  <p className="text-sm text-blue-200">
+                    Les identifiants sont sécurisés et gérés par le serveur
+                    (.env).
+                  </p>
+                </div>
+              )}
               <input
                 type="text"
                 placeholder="Access ID (Client ID)"
                 value={tuyaCredentials.api_key}
+                disabled={tuyaCredentials.source === "env"}
                 onChange={(e) =>
                   setTuyaCredentials({
                     ...tuyaCredentials,
                     api_key: e.target.value,
                   })
                 }
-                className="bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none"
+                className={`bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none ${
+                  tuyaCredentials.source === "env"
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
               />
               <input
                 type="password"
                 placeholder="Access Secret"
                 value={tuyaCredentials.api_secret}
+                disabled={tuyaCredentials.source === "env"}
                 onChange={(e) =>
                   setTuyaCredentials({
                     ...tuyaCredentials,
                     api_secret: e.target.value,
                   })
                 }
-                className="bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none"
+                className={`bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none ${
+                  tuyaCredentials.source === "env"
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
               />
               <select
                 value={tuyaCredentials.region}
+                disabled={tuyaCredentials.source === "env"}
                 onChange={(e) =>
                   setTuyaCredentials({
                     ...tuyaCredentials,
                     region: e.target.value,
                   })
                 }
-                className="bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none"
+                className={`bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none ${
+                  tuyaCredentials.source === "env"
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
               >
                 <option value="eu">Europe (EU)</option>
                 <option value="us">Americas (US)</option>
@@ -1363,19 +1387,36 @@ export default function Settings() {
                   </div>
                   <div>
                     <label className="block text-sm text-slate-400 mb-1">
-                      Cible (0-1000)
+                      {editingActionDevice?.category === "cl" ||
+                      editingActionDevice?.category === "kg"
+                        ? "Position Cible (%)"
+                        : "Cible (0-1000)"}
                     </label>
                     <input
                       type="number"
                       min="0"
-                      max="1000"
-                      value={actionForm.target || 1000}
-                      onChange={(e) =>
+                      max={
+                        editingActionDevice?.category === "cl" ||
+                        editingActionDevice?.category === "kg"
+                          ? 100
+                          : 1000
+                      }
+                      value={
+                        editingActionDevice?.category === "cl" ||
+                        editingActionDevice?.category === "kg"
+                          ? (actionForm.target || 1000) / 10
+                          : actionForm.target || 1000
+                      }
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        const isBlind =
+                          editingActionDevice?.category === "cl" ||
+                          editingActionDevice?.category === "kg";
                         setActionForm({
                           ...actionForm,
-                          target: parseInt(e.target.value) || 1000,
-                        })
-                      }
+                          target: isBlind ? val * 10 : val,
+                        });
+                      }}
                       className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
                     />
                   </div>
@@ -1386,19 +1427,36 @@ export default function Settings() {
               {actionForm.type === "VALUE" && (
                 <div className="animate-in fade-in slide-in-from-top-2">
                   <label className="block text-sm text-slate-400 mb-1">
-                    Valeur (0-1000)
+                    {editingActionDevice?.category === "cl" ||
+                    editingActionDevice?.category === "kg"
+                      ? "Position Cible (%)"
+                      : "Valeur (0-1000)"}
                   </label>
                   <input
                     type="number"
                     min="0"
-                    max="1000"
-                    value={actionForm.target || 1000}
-                    onChange={(e) =>
+                    max={
+                      editingActionDevice?.category === "cl" ||
+                      editingActionDevice?.category === "kg"
+                        ? 100
+                        : 1000
+                    }
+                    value={
+                      editingActionDevice?.category === "cl" ||
+                      editingActionDevice?.category === "kg"
+                        ? (actionForm.target || 1000) / 10
+                        : actionForm.target || 1000
+                    }
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 0;
+                      const isBlind =
+                        editingActionDevice?.category === "cl" ||
+                        editingActionDevice?.category === "kg";
                       setActionForm({
                         ...actionForm,
-                        target: parseInt(e.target.value) || 1000,
-                      })
-                    }
+                        target: isBlind ? val * 10 : val,
+                      });
+                    }}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
                   />
                 </div>
