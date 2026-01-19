@@ -1,3 +1,8 @@
+<div align="center">
+  <img src="./frontend/public/FamilyOS_header.png" alt="Bannière Portfolio Informatique" width="100%">
+</div>
+<br>
+
 # 🏠 FamilyOS
 
 FamilyOS est un tableau de bord familial intelligent et centralisé, conçu pour simplifier la gestion quotidienne du foyer. Il regroupe météo, agenda, menus, budget et bien plus, le tout propulsé par une IA locale et cloud.
